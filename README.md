@@ -11,7 +11,10 @@ Este es un monorepo para un sistema de gestión de contenidos (CMS) de blog, uti
 ## Requisitos Previos
 
 - [Node.js](https://nodejs.org/) (versión 18 o superior)
-- [pnpm](https://pnpm.io/) (gestor de paquetes recomendado)
+- **Corepack** (activado para gestionar la versión de pnpm):
+  ```bash
+  corepack enable
+  ```
 
 ## Instalación y Ejecución rápida
 
