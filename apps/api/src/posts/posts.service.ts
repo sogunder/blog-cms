@@ -61,21 +61,22 @@ function mapTags(tags: unknown) {
   });
 }
 
-function mapPost(doc: Record<string, unknown>) {
+function mapPost(doc: unknown) {
+  const d = doc as Record<string, unknown>;
   return {
-    id: String(doc._id),
-    title: doc.title,
-    slug: doc.slug,
-    content: doc.content ?? '',
-    summary: doc.summary ?? '',
-    status: doc.status,
-    views: doc.views ?? 0,
-    author: mapAuthor(doc.author),
-    category: mapCategory(doc.category),
-    tags: mapTags(doc.tags),
-    publishedAt: doc.publishedAt,
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt,
+    id: String(d._id),
+    title: d.title,
+    slug: d.slug,
+    content: d.content ?? '',
+    summary: d.summary ?? '',
+    status: d.status,
+    views: d.views ?? 0,
+    author: mapAuthor(d.author),
+    category: mapCategory(d.category),
+    tags: mapTags(d.tags),
+    publishedAt: d.publishedAt,
+    createdAt: d.createdAt,
+    updatedAt: d.updatedAt,
   };
 }
 
@@ -109,7 +110,7 @@ export class PostsService {
         publishedAt,
       });
       const populated = await doc.populate(populate);
-      return mapPost(populated.toObject() as Record<string, unknown>);
+      return mapPost(populated.toObject());
     } catch (e) {
       this.throwIfDup(e);
       throw e;
@@ -166,7 +167,7 @@ export class PostsService {
       if (!updated) {
         throw new NotFoundException('Post no encontrado');
       }
-      return mapPost(updated as Record<string, unknown>);
+      return mapPost(updated);
     } catch (e) {
       this.throwIfDup(e);
       throw e;
@@ -196,7 +197,7 @@ export class PostsService {
         .exec(),
     ]);
     return {
-      data: rows.map((r) => mapPost(r as Record<string, unknown>)),
+      data: rows.map((r) => mapPost(r)),
       total,
       page,
       limit,
@@ -217,7 +218,7 @@ export class PostsService {
     if (!doc) {
       throw new NotFoundException('Post no encontrado');
     }
-    return mapPost(doc as Record<string, unknown>);
+    return mapPost(doc);
   }
 
   async findAdmin(page: number, limit: number): Promise<PaginatedResult<unknown>> {
@@ -234,7 +235,7 @@ export class PostsService {
         .exec(),
     ]);
     return {
-      data: rows.map((r) => mapPost(r as Record<string, unknown>)),
+      data: rows.map((r) => mapPost(r)),
       total,
       page,
       limit,
@@ -247,7 +248,7 @@ export class PostsService {
     if (!doc) {
       throw new NotFoundException('Post no encontrado');
     }
-    return mapPost(doc as Record<string, unknown>);
+    return mapPost(doc);
   }
 
   async findPublishedByCategorySlug(
@@ -279,7 +280,7 @@ export class PostsService {
         .exec(),
     ]);
     return {
-      data: rows.map((r) => mapPost(r as Record<string, unknown>)),
+      data: rows.map((r) => mapPost(r)),
       total,
       page,
       limit,
@@ -316,7 +317,7 @@ export class PostsService {
         .exec(),
     ]);
     return {
-      data: rows.map((r) => mapPost(r as Record<string, unknown>)),
+      data: rows.map((r) => mapPost(r)),
       total,
       page,
       limit,

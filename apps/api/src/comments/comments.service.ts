@@ -19,14 +19,15 @@ const populateList = [
   { path: 'author', select: 'email name role' },
 ];
 
-function mapComment(doc: Record<string, unknown>) {
-  const post = doc.post as Record<string, unknown> | undefined;
-  const author = doc.author as Record<string, unknown> | undefined;
+function mapComment(doc: unknown) {
+  const d = doc as Record<string, unknown>;
+  const post = d.post as Record<string, unknown> | undefined;
+  const author = d.author as Record<string, unknown> | undefined;
   return {
-    id: String(doc._id),
-    content: doc.content,
-    status: doc.status,
-    createdAt: doc.createdAt,
+    id: String(d._id),
+    content: d.content,
+    status: d.status,
+    createdAt: d.createdAt,
     post: post
       ? { id: String(post._id), title: post.title, slug: post.slug }
       : null,
@@ -40,13 +41,13 @@ function mapComment(doc: Record<string, unknown>) {
         }
       : {
           id: 'guest',
-          name: (doc.guestName as string) || 'Anónimo',
-          email: (doc.guestEmail as string) || '',
+          name: (d.guestName as string) || 'Anónimo',
+          email: (d.guestEmail as string) || '',
           role: 'reader',
           createdAt: '',
         },
-    guestName: doc.guestName,
-    guestEmail: doc.guestEmail,
+    guestName: d.guestName,
+    guestEmail: d.guestEmail,
   };
 }
 
@@ -64,13 +65,6 @@ export class CommentsService {
       throw new NotFoundException('Post no disponible para comentarios');
     }
 
-    if (
-      !user &&
-      (!dto.guestName?.trim() || !dto.guestEmail?.trim())
-    ) {
-      throw new BadRequestException('Nombre y email son obligatorios');
-    }
-
     if (user) {
       const u = await this.users.findById(user.sub).lean().exec();
       if (!u) {
@@ -85,7 +79,13 @@ export class CommentsService {
         guestEmail: '',
       });
       const populated = await doc.populate(populateList);
-      return mapComment(populated.toObject() as Record<string, unknown>);
+      return mapComment(populated.toObject());
+    }
+
+    const guestName = dto.guestName?.trim();
+    const guestEmail = dto.guestEmail?.trim();
+    if (!guestName || !guestEmail) {
+      throw new BadRequestException('Nombre y email son obligatorios');
     }
 
     const doc = await this.comments.create({
@@ -93,11 +93,11 @@ export class CommentsService {
       content: dto.content.trim(),
       status: CommentStatus.Pending,
       author: null,
-      guestName: dto.guestName.trim(),
-      guestEmail: dto.guestEmail.trim().toLowerCase(),
+      guestName,
+      guestEmail: guestEmail.toLowerCase(),
     });
     const populated = await doc.populate(populateList);
-    return mapComment(populated.toObject() as Record<string, unknown>);
+    return mapComment(populated.toObject());
   }
 
   async findAdmin(page: number, limit: number): Promise<PaginatedResult<unknown>> {
@@ -114,7 +114,7 @@ export class CommentsService {
         .exec(),
     ]);
     return {
-      data: rows.map((r) => mapComment(r as Record<string, unknown>)),
+      data: rows.map((r) => mapComment(r)),
       total,
       page,
       limit,
@@ -135,7 +135,7 @@ export class CommentsService {
     if (!updated) {
       throw new NotFoundException('Comentario no encontrado');
     }
-    return mapComment(updated as Record<string, unknown>);
+    return mapComment(updated);
   }
 
   async remove(id: string) {

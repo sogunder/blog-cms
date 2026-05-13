@@ -10,6 +10,9 @@ export class Category {
 
   @Prop({ required: true, unique: true, lowercase: true, trim: true, maxlength: 120 })
   slug: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

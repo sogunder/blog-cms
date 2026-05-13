@@ -15,16 +15,17 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { hashUserPassword } from './users.crypto';
 
-function toPublicUser(doc: Record<string, unknown>) {
+function toPublicUser(doc: unknown) {
+  const d = doc as Record<string, unknown>;
   return {
-    id: String(doc._id),
-    email: doc.email,
-    name: doc.name,
-    role: doc.role,
-    isActive: doc.isActive,
-    lastAccess: doc.lastAccess,
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt,
+    id: String(d._id),
+    email: d.email,
+    name: d.name,
+    role: d.role,
+    isActive: d.isActive,
+    lastAccess: d.lastAccess,
+    createdAt: d.createdAt,
+    updatedAt: d.updatedAt,
   };
 }
 
@@ -94,7 +95,7 @@ export class UsersService implements OnModuleInit {
         .exec(),
     ]);
     return {
-      data: rows.map((u) => toPublicUser(u as Record<string, unknown>)),
+      data: rows.map((u) => toPublicUser(u)),
       total,
       page,
       limit,
@@ -107,7 +108,7 @@ export class UsersService implements OnModuleInit {
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
-    return toPublicUser(user as Record<string, unknown>);
+    return toPublicUser(user);
   }
 
   async update(id: string, dto: UpdateUserDto) {
@@ -140,7 +141,7 @@ export class UsersService implements OnModuleInit {
       if (!updated) {
         throw new NotFoundException('Usuario no encontrado');
       }
-      return toPublicUser(updated as Record<string, unknown>);
+      return toPublicUser(updated);
     } catch (e) {
       this.throwIfDuplicate(e);
       throw e;

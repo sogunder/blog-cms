@@ -11,6 +11,23 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag, TagDocument } from './schemas/tag.schema';
 
+type TagRow = {
+  id: string;
+  name: string;
+  slug: string;
+  postCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type TagSingle = {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 @Injectable()
 export class TagsService {
   constructor(
@@ -19,20 +36,27 @@ export class TagsService {
     private readonly postsService: PostsService,
   ) {}
 
-  async create(dto: CreateTagDto) {
+  async create(dto: CreateTagDto): Promise<TagSingle> {
     try {
       const doc = await this.tags.create({
         name: dto.name.trim(),
         slug: dto.slug.trim().toLowerCase(),
       });
-      return { ...doc.toObject(), id: String(doc._id) };
+      const o = doc.toObject();
+      return {
+        id: String(doc._id),
+        name: o.name,
+        slug: o.slug,
+        createdAt: o.createdAt,
+        updatedAt: o.updatedAt,
+      };
     } catch (e) {
       this.throwIfDup(e);
       throw e;
     }
   }
 
-  async findAllPublic() {
+  async findAllPublic(): Promise<TagRow[]> {
     const list = await this.tags.find().sort({ name: 1 }).lean().exec();
     const counts = await this.posts.aggregate<{ _id: string; count: number }>([
       { $unwind: '$tags' },
@@ -40,17 +64,20 @@ export class TagsService {
     ]);
     const map = new Map(counts.map((c) => [String(c._id), c.count]));
     return list.map((t) => ({
-      ...t,
       id: String(t._id),
+      name: t.name,
+      slug: t.slug,
       postCount: map.get(String(t._id)) ?? 0,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
     }));
   }
 
-  async findAllAdmin() {
+  async findAllAdmin(): Promise<TagRow[]> {
     return this.findAllPublic();
   }
 
-  async update(id: string, dto: UpdateTagDto) {
+  async update(id: string, dto: UpdateTagDto): Promise<TagSingle> {
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) {
       data.name = dto.name.trim();
@@ -66,7 +93,13 @@ export class TagsService {
       if (!updated) {
         throw new NotFoundException('Tag no encontrado');
       }
-      return { ...updated, id: String(updated._id) };
+      return {
+        id: String(updated._id),
+        name: updated.name,
+        slug: updated.slug,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+      };
     } catch (e) {
       this.throwIfDup(e);
       throw e;

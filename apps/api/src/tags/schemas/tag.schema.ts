@@ -10,6 +10,9 @@ export class Tag {
 
   @Prop({ required: true, unique: true, lowercase: true, trim: true, maxlength: 80 })
   slug: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const TagSchema = SchemaFactory.createForClass(Tag);

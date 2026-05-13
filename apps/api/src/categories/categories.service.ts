@@ -12,6 +12,23 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category, CategoryDocument } from './schemas/category.schema';
 
+type CategoryRow = {
+  id: string;
+  name: string;
+  slug: string;
+  postCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type CategorySingle = {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 @Injectable()
 export class CategoriesService {
   constructor(
@@ -33,7 +50,7 @@ export class CategoriesService {
     }
   }
 
-  async findAllPublic() {
+  async findAllPublic(): Promise<CategoryRow[]> {
     const cats = await this.categories.find().sort({ name: 1 }).lean().exec();
     const counts = await this.posts.aggregate<{ _id: string; count: number }>([
       { $match: { status: PostStatus.Published } },
@@ -41,22 +58,28 @@ export class CategoriesService {
     ]);
     const map = new Map(counts.map((c) => [String(c._id), c.count]));
     return cats.map((c) => ({
-      ...c,
       id: String(c._id),
+      name: c.name,
+      slug: c.slug,
       postCount: map.get(String(c._id)) ?? 0,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
     }));
   }
 
-  async findAllAdmin() {
+  async findAllAdmin(): Promise<CategoryRow[]> {
     const cats = await this.categories.find().sort({ name: 1 }).lean().exec();
     const counts = await this.posts.aggregate<{ _id: string; count: number }>([
       { $group: { _id: '$category', count: { $sum: 1 } } },
     ]);
     const map = new Map(counts.map((c) => [String(c._id), c.count]));
     return cats.map((c) => ({
-      ...c,
       id: String(c._id),
+      name: c.name,
+      slug: c.slug,
       postCount: map.get(String(c._id)) ?? 0,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
     }));
   }
 
@@ -64,7 +87,7 @@ export class CategoriesService {
     return this.postsService.findPublishedByCategorySlug(slug, page, limit);
   }
 
-  async findBySlug(slug: string) {
+  async findBySlug(slug: string): Promise<CategorySingle> {
     const cat = await this.categories
       .findOne({ slug: slug.toLowerCase() })
       .lean()
@@ -72,10 +95,16 @@ export class CategoriesService {
     if (!cat) {
       throw new NotFoundException('Categoría no encontrada');
     }
-    return { ...cat, id: String(cat._id) };
+    return {
+      id: String(cat._id),
+      name: cat.name,
+      slug: cat.slug,
+      createdAt: cat.createdAt,
+      updatedAt: cat.updatedAt,
+    };
   }
 
-  async update(id: string, dto: UpdateCategoryDto) {
+  async update(id: string, dto: UpdateCategoryDto): Promise<CategorySingle> {
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) {
       data.name = dto.name.trim();
@@ -91,7 +120,13 @@ export class CategoriesService {
       if (!updated) {
         throw new NotFoundException('Categoría no encontrada');
       }
-      return { ...updated, id: String(updated._id) };
+      return {
+        id: String(updated._id),
+        name: updated.name,
+        slug: updated.slug,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+      };
     } catch (e) {
       this.throwIfDup(e);
       throw e;
