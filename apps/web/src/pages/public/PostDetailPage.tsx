@@ -1,24 +1,24 @@
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import type { Post } from '../../types';
+import { Post } from '../../types';
 
 // Mock post for demonstration
 const MOCK_POST: Post = {
   id: '1',
-  title: 'Getting Started with React 19',
-  slug: 'getting-started-react-19',
+  title: 'Primeros pasos con React 19',
+  slug: 'primeros-pasos-react-19',
   content: `
-    <p>React 19 is finally here! This release brings a lot of exciting new features and improvements that make web development even more enjoyable and efficient.</p>
-    <h2>New Hooks</h2>
-    <p>One of the most talked-about features is the introduction of several new hooks that simplify state management and side effects.</p>
-    <h2>Better Performance</h2>
-    <p>The React team has worked hard on under-the-hood optimizations that lead to faster rendering and smaller bundle sizes.</p>
+    <p>¡React 19 ya está aquí! Esta versión trae muchas características nuevas y emocionantes que hacen que el desarrollo web sea aún más agradable y eficiente.</p>
+    <h2>Nuevos Hooks</h2>
+    <p>Una de las características más comentadas es la introducción de varios hooks nuevos que simplifican la gestión del estado y los efectos secundarios.</p>
+    <h2>Mejor Rendimiento</h2>
+    <p>El equipo de React ha trabajado duro en optimizaciones internas que conducen a un renderizado más rápido y tamaños de paquete más pequeños.</p>
   `,
-  summary: 'A brief guide to the new features in React 19.',
+  summary: 'Una guía rápida sobre las nuevas características de React 19.',
   status: 'published',
   views: 1250,
-  author: { id: 'u1', name: 'John Doe', email: '', role: 'admin', createdAt: '' },
-  category: { id: 'c1', name: 'Development', slug: 'dev' },
+  author: { id: 'v1', name: 'Vicente Admin', email: '', role: 'admin', createdAt: '' },
+  category: { id: 'c1', name: 'Desarrollo', slug: 'dev' },
   tags: [{ id: 't1', name: 'React', slug: 'react' }, { id: 't2', name: 'Frontend', slug: 'frontend' }],
   createdAt: '2026-05-10T10:00:00Z',
   updatedAt: '2026-05-10T10:00:00Z',
@@ -26,12 +26,12 @@ const MOCK_POST: Post = {
 
 export const PostDetailPage = () => {
   const { slug } = useParams<{ slug: string }>();
-
-  // Mock: solo coincide con el slug del post de demo; en producción harías fetch por slug.
-  const post = slug === MOCK_POST.slug ? MOCK_POST : undefined; 
+  
+  // In a real app, we would fetch the post using the slug with useQuery
+  const post = MOCK_POST; 
 
   if (!post) {
-    return <div className="text-center py-20 text-gray-500">Post not found.</div>;
+    return <div className="text-center py-20 text-gray-500 font-bold">Post no encontrado.</div>;
   }
 
   return (
@@ -44,33 +44,36 @@ export const PostDetailPage = () => {
         <meta property="og:type" content="article" />
       </Helmet>
 
-      <header className="mb-8">
-        <div className="flex items-center space-x-2 text-sm text-indigo-600 font-medium mb-3">
+      <header className="mb-10">
+        <div className="flex items-center space-x-2 text-sm text-google-blue font-bold mb-4 uppercase tracking-widest">
           <span>{post.category.name}</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight tracking-tight">
           {post.title}
         </h1>
-        <div className="flex items-center text-gray-500 text-sm">
-          <span>By {post.author.name}</span>
-          <span className="mx-2">•</span>
-          <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-          <span className="mx-2">•</span>
-          <span>{post.views} views</span>
+        <div className="flex items-center text-gray-500 text-sm font-medium">
+          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-google-blue mr-3 font-bold border border-blue-100">
+            {post.author.name.charAt(0)}
+          </div>
+          <span>Por <span className="text-gray-900 font-bold">{post.author.name}</span></span>
+          <span className="mx-3 text-gray-300">•</span>
+          <span>{new Date(post.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <span className="mx-3 text-gray-300">•</span>
+          <span>{post.views} vistas</span>
         </div>
       </header>
 
       <div 
-        className="prose prose-indigo prose-lg max-w-none text-gray-800 leading-relaxed"
+        className="prose prose-blue lg:prose-xl max-w-none"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
 
-      <footer className="mt-12 pt-8 border-t">
+      <footer className="mt-16 pt-8 border-t border-gray-100">
         <div className="flex flex-wrap gap-2">
           {post.tags.map(tag => (
             <span 
               key={tag.id} 
-              className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
+              className="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-bold hover:bg-blue-50 hover:text-google-blue transition-colors cursor-pointer"
             >
               #{tag.name}
             </span>

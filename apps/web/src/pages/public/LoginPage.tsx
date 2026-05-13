@@ -8,8 +8,8 @@ import { Input } from '../../components/ui/Input';
 import { useAuthStore } from '../../app/store/useAuthStore';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().min(1, 'El usuario o email es requerido'),
+  password: z.string().min(4, 'La contraseña debe tener al menos 4 caracteres'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -31,60 +31,82 @@ export const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 800));
       
-      // For demonstration, any login is successful as admin
-      setAuth(
-        { 
-          id: '1', 
-          name: 'Vicente Admin', 
-          email: data.email, 
-          role: 'admin', 
-          createdAt: new Date().toISOString() 
-        },
-        'fake-jwt-token'
-      );
-      
-      toast.success('Welcome back!');
-      navigate(from, { replace: true });
+      // Lógica de Seeder / Usuarios de Prueba
+      if (data.email === 'vicente' && data.password === 'vicente') {
+        setAuth(
+          { 
+            id: 'v1', 
+            name: 'Vicente Admin', 
+            email: 'vicente@cms.com', 
+            role: 'admin', 
+            createdAt: new Date().toISOString() 
+          },
+          'token-vicente-admin'
+        );
+        toast.success('¡Bienvenido, Vicente!');
+        navigate(from, { replace: true });
+        return;
+      }
+
+      if (data.email === 'user' && data.password === 'user') {
+        setAuth(
+          { 
+            id: 'u1', 
+            name: 'Usuario Común', 
+            email: 'user@cms.com', 
+            role: 'reader', 
+            createdAt: new Date().toISOString() 
+          },
+          'token-usuario-comun'
+        );
+        toast.success('Sesión iniciada correctamente');
+        navigate('/', { replace: true });
+        return;
+      }
+
+      toast.error('Credenciales incorrectas (Prueba: vicente/vicente)');
     } catch (error) {
-      toast.error('Invalid credentials');
+      toast.error('Error al intentar iniciar sesión');
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Sign In</h1>
-          <p className="text-gray-500 mt-2">Access the CMS panel</p>
+    <div className="min-h-[70vh] flex items-center justify-center">
+      <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-google-blue rounded-2xl mx-auto mb-6 flex items-center justify-center text-white shadow-lg shadow-blue-100">
+            <span className="text-3xl font-bold">B</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Iniciar Sesión</h1>
+          <p className="text-gray-500 mt-2 font-medium">Gestiona tu Blog CMS</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Input
-            label="Email Address"
-            type="email"
-            placeholder="admin@example.com"
+            label="Usuario o Correo"
+            type="text"
+            placeholder="vicente"
             {...register('email')}
             error={errors.email?.message}
           />
           
           <Input
-            label="Password"
+            label="Contraseña"
             type="password"
             placeholder="••••••••"
             {...register('password')}
             error={errors.password?.message}
           />
 
-          <Button type="submit" className="w-full" isLoading={isSubmitting}>
-            Log In
+          <Button type="submit" className="w-full py-4 text-base rounded-2xl bg-google-blue hover:bg-blue-600" isLoading={isSubmitting}>
+            Continuar
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Don't have an account? Contact an administrator.</p>
+        <div className="mt-8 pt-6 border-t border-gray-50 text-center text-sm text-gray-400 font-medium">
+          <p>Credenciales de prueba: <span className="text-google-blue">vicente / vicente</span></p>
         </div>
       </div>
     </div>

@@ -1,33 +1,33 @@
 import { DataTable } from '../../components/ui/DataTable';
-import type { Post } from '../../types';
+import { Post } from '../../types';
 import { Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const MOCK_POSTS: Post[] = [
   {
     id: '1',
-    title: 'Getting Started with React 19',
-    slug: 'getting-started-react-19',
+    title: 'Primeros pasos con React 19',
+    slug: 'primeros-pasos-react-19',
     content: '',
-    summary: 'A brief guide to the new features in React 19.',
+    summary: 'Una guía rápida sobre las nuevas características de React 19.',
     status: 'published',
     views: 1250,
-    author: { id: 'u1', name: 'John Doe', email: '', role: 'admin', createdAt: '' },
-    category: { id: 'c1', name: 'Development', slug: 'dev' },
+    author: { id: 'v1', name: 'Vicente Admin', email: '', role: 'admin', createdAt: '' },
+    category: { id: 'c1', name: 'Desarrollo', slug: 'dev' },
     tags: [],
     createdAt: '2026-05-10T10:00:00Z',
     updatedAt: '2026-05-10T10:00:00Z',
   },
   {
     id: '2',
-    title: 'Modern CSS with Tailwind v4',
-    slug: 'modern-css-tailwind-v4',
+    title: 'CSS Moderno con Tailwind v4',
+    slug: 'css-moderno-tailwind-v4',
     content: '',
-    summary: 'Mastering the new CSS-first engine of Tailwind v4.',
+    summary: 'Dominando el nuevo motor CSS-first de Tailwind v4.',
     status: 'draft',
     views: 0,
-    author: { id: 'u1', name: 'John Doe', email: '', role: 'admin', createdAt: '' },
-    category: { id: 'c1', name: 'Design', slug: 'design' },
+    author: { id: 'v1', name: 'Vicente Admin', email: '', role: 'admin', createdAt: '' },
+    category: { id: 'c1', name: 'Diseño', slug: 'design' },
     tags: [],
     createdAt: '2026-05-12T14:30:00Z',
     updatedAt: '2026-05-12T14:30:00Z',
@@ -36,34 +36,34 @@ const MOCK_POSTS: Post[] = [
 
 export const PostsPage = () => {
   const columns = [
-    { header: 'Title', accessor: 'title' as keyof Post },
+    { header: 'Título', accessor: 'title' as keyof Post },
     { 
-      header: 'Status', 
+      header: 'Estado', 
       accessor: (post: Post) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-          post.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+          post.status === 'published' ? 'bg-green-50 text-google-green' : 'bg-yellow-50 text-google-yellow'
         }`}>
-          {post.status.toUpperCase()}
+          {post.status === 'published' ? 'PUBLICADO' : 'BORRADOR'}
         </span>
       )
     },
-    { header: 'Author', accessor: (post: Post) => post.author.name },
-    { header: 'Views', accessor: 'views' as keyof Post },
+    { header: 'Autor', accessor: (post: Post) => post.author.name },
+    { header: 'Vistas', accessor: 'views' as keyof Post },
     { 
-      header: 'Date', 
+      header: 'Fecha', 
       accessor: (post: Post) => new Date(post.createdAt).toLocaleDateString() 
     },
     {
-      header: 'Actions',
+      header: 'Acciones',
       accessor: (post: Post) => (
-        <div className="flex space-x-2">
-          <Link to={`/post/${post.slug}`} className="p-1 text-gray-500 hover:text-indigo-600">
+        <div className="flex space-x-3">
+          <Link to={`/post/${post.slug}`} className="p-1.5 text-gray-400 hover:text-google-blue transition-colors">
             <Eye size={18} />
           </Link>
-          <Link to={`/admin/posts/${post.id}/edit`} className="p-1 text-gray-500 hover:text-indigo-600">
+          <Link to={`/admin/posts/${post.id}/edit`} className="p-1.5 text-gray-400 hover:text-google-blue transition-colors">
             <Edit size={18} />
           </Link>
-          <button className="p-1 text-gray-500 hover:text-red-600">
+          <button className="p-1.5 text-gray-400 hover:text-google-red transition-colors">
             <Trash2 size={18} />
           </button>
         </div>
@@ -72,22 +72,24 @@ export const PostsPage = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Posts</h1>
-          <p className="text-gray-500">Manage your blog content and drafts.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Entradas</h1>
+          <p className="text-gray-500 font-medium">Gestiona el contenido de tu blog y borradores.</p>
         </div>
         <Link
           to="/admin/posts/new"
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center px-6 py-3 bg-google-blue text-white rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-100"
         >
           <Plus size={20} className="mr-2" />
-          Create Post
+          Nueva Entrada
         </Link>
       </div>
 
-      <DataTable columns={columns} data={MOCK_POSTS} />
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <DataTable columns={columns} data={MOCK_POSTS} />
+      </div>
     </div>
   );
 };

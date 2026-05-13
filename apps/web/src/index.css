@@ -1,39 +1,33 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Product Sans", "Inter", system-ui, -apple-system, sans-serif;
   
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-200: #c7d2fe;
-  --color-primary-300: #a5b4fc;
-  --color-primary-400: #818cf8;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
-  --color-primary-800: #3730a3;
-  --color-primary-900: #312e81;
+  /* Google Inspired Palette */
+  --color-google-blue: #4285F4;
+  --color-google-red: #EA4335;
+  --color-google-yellow: #FBBC05;
+  --color-google-green: #34A853;
+  
+  --color-primary-50: #e8f0fe;
+  --color-primary-100: #d2e3fc;
+  --color-primary-200: #aecbfa;
+  --color-primary-300: #8ab4f8;
+  --color-primary-400: #669df6;
+  --color-primary-500: #4285F4; /* Google Blue */
+  --color-primary-600: #1a73e8;
+  --color-primary-700: #185abc;
+  --color-primary-800: #174ea6;
+  --color-primary-900: #164489;
 }
 
-/* Custom Base Styles */
 @layer base {
-  html {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
   body {
-    @apply bg-gray-50 text-gray-900 antialiased selection:bg-indigo-100 selection:text-indigo-900;
+    @apply bg-[#F8F9FA] text-[#3C4043] antialiased selection:bg-blue-100 selection:text-blue-900;
   }
 
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+  h1, h2, h3, h4 {
+    @apply font-medium text-[#202124] tracking-tight;
   }
 }
 
@@ -41,9 +35,7 @@
 .prose {
   @apply max-w-none;
 }
-.prose h1 { @apply text-3xl font-bold mb-6 text-gray-900; }
-.prose h2 { @apply text-2xl font-semibold mb-4 mt-8 text-gray-800; }
-.prose p { @apply mb-4 leading-relaxed text-gray-600; }
-.prose ul { @apply list-disc pl-6 mb-4; }
-.prose ol { @apply list-decimal pl-6 mb-4; }
-.prose blockquote { @apply border-l-4 border-indigo-500 pl-4 italic text-gray-700 my-6; }
+.prose h1 { @apply text-3xl font-bold mb-6 text-[#202124]; }
+.prose h2 { @apply text-2xl font-semibold mb-4 mt-8 text-[#202124]; }
+.prose p { @apply mb-4 leading-relaxed text-[#5F6368]; }
+.prose blockquote { @apply border-l-4 border-google-blue pl-4 italic text-[#5F6368] my-6; }
