@@ -6,7 +6,8 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { AuthService, JwtPayload } from './auth.service';
+import { AuthService } from './auth.service';
+import type { JwtPayload } from './interfaces/jwt-payload.interface';
 import { LoginDto } from './dto/login.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
@@ -19,7 +20,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() dto: LoginDto) {
-    return this.auth.signIn(dto.username, dto.password);
+    return this.auth.signIn(dto.email, dto.password);
   }
 
   @Get('profile')

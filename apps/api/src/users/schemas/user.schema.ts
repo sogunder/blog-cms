@@ -6,18 +6,24 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ required: true, unique: true, trim: true, lowercase: true })
-  username: string;
+  @Prop({ required: true, unique: true, lowercase: true, trim: true })
+  email: string;
 
-  @Prop({ required: true, select: true })
+  @Prop({ required: true, trim: true, maxlength: 120 })
+  name: string;
+
+  @Prop({ required: true, select: false })
   passwordHash: string;
 
   @Prop({
     type: String,
     enum: Object.values(UserRole),
-    default: UserRole.User,
+    default: UserRole.Reader,
   })
   role: UserRole;
+
+  @Prop({ default: true })
+  isActive: boolean;
 
   @Prop({ type: Date, default: null })
   lastAccess: Date | null;

@@ -5,6 +5,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserRole } from '../common/enums';
@@ -12,10 +13,20 @@ import { PaginatedResult } from '../common/interfaces/paginated-result.interface
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
-import {
-  hashUserPassword,
-  isBcryptPasswordHash,
-} from './users.crypto';
+import { hashUserPassword } from './users.crypto';
+
+function toPublicUser(doc: Record<string, unknown>) {
+  return {
+    id: String(doc._id),
+    email: doc.email,
+    name: doc.name,
+    role: doc.role,
+    isActive: doc.isActive,
+    lastAccess: doc.lastAccess,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+  };
+}
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -23,83 +34,54 @@ export class UsersService implements OnModuleInit {
 
   constructor(
     @InjectModel(User.name) private readonly users: Model<UserDocument>,
+    private readonly config: ConfigService,
   ) {}
 
   async onModuleInit() {
-    await this.migrateLegacyPasswordFields();
+    await this.seedAdminFromEnv();
   }
 
-  /**
-   * - Renombra `password` → `passwordHash` (datos viejos).
-   * - Elimina `password` si ya existe `passwordHash`.
-   * - Si `passwordHash` no parece bcrypt, asume texto plano y lo sustituye por hash.
-   */
-  private async migrateLegacyPasswordFields() {
-    const coll = this.users.collection;
-
-    const renamed = await coll.updateMany(
-      { passwordHash: { $exists: false }, password: { $exists: true } },
-      [{ $set: { passwordHash: '$password' } }, { $unset: 'password' }],
-    );
-    if (renamed.modifiedCount > 0) {
-      this.logger.log(
-        `Migración: campo password → passwordHash en ${renamed.modifiedCount} documento(s)`,
-      );
+  private async seedAdminFromEnv() {
+    const email = this.config.get<string>('SEED_ADMIN_EMAIL')?.trim().toLowerCase();
+    const password = this.config.get<string>('SEED_ADMIN_PASSWORD');
+    if (!email || !password) {
+      return;
     }
-
-    const droppedDup = await coll.updateMany(
-      { password: { $exists: true }, passwordHash: { $exists: true } },
-      { $unset: { password: '' } },
-    );
-    if (droppedDup.modifiedCount > 0) {
-      this.logger.log(
-        `Migración: eliminado password duplicado en ${droppedDup.modifiedCount} documento(s)`,
-      );
+    const exists = await this.users.exists({ email }).exec();
+    if (exists) {
+      return;
     }
-
-    const needsRehash = await this.users
-      .find({ passwordHash: { $exists: true, $nin: [null, ''] } })
-      .select('+passwordHash')
-      .lean()
-      .exec();
-
-    let rehashed = 0;
-    for (const doc of needsRehash) {
-      const raw = doc.passwordHash;
-      if (typeof raw !== 'string' || isBcryptPasswordHash(raw)) {
-        continue;
-      }
-      const passwordHash = await hashUserPassword(raw);
-      await this.users.updateOne({ _id: doc._id }, { $set: { passwordHash } });
-      rehashed += 1;
-    }
-    if (rehashed > 0) {
-      this.logger.log(
-        `Migración: ${rehashed} contraseña(s) en texto plano sustituida(s) por hash bcrypt`,
-      );
-    }
+    const passwordHash = await hashUserPassword(password);
+    await this.users.create({
+      email,
+      name: this.config.get<string>('SEED_ADMIN_NAME', 'Administrador'),
+      passwordHash,
+      role: UserRole.Admin,
+      isActive: true,
+      lastAccess: null,
+    });
+    this.logger.log(`Usuario admin sembrado: ${email}`);
   }
 
   async create(dto: CreateUserDto) {
     const passwordHash = await hashUserPassword(dto.password);
     try {
       const doc = await this.users.create({
-        username: dto.username.trim().toLowerCase(),
+        email: dto.email.trim().toLowerCase(),
+        name: dto.name.trim(),
         passwordHash,
-        role: UserRole.User,
+        role: dto.role ?? UserRole.Reader,
+        isActive: dto.isActive ?? true,
         lastAccess: null,
       });
-      return this.findPublicById(doc.id);
+      return toPublicUser(doc.toObject());
     } catch (e) {
-      this.throwIfDuplicateUsername(e);
+      this.throwIfDuplicate(e);
       throw e;
     }
   }
 
-  async findAll(
-    page: number,
-    limit: number,
-  ): Promise<PaginatedResult<User>> {
+  async findAll(page: number, limit: number): Promise<PaginatedResult<unknown>> {
     const skip = (page - 1) * limit;
     const [total, rows] = await Promise.all([
       this.users.countDocuments().exec(),
@@ -112,51 +94,55 @@ export class UsersService implements OnModuleInit {
         .exec(),
     ]);
     return {
-      data: rows as User[],
+      data: rows.map((u) => toPublicUser(u as Record<string, unknown>)),
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit) || 1,
     };
   }
 
   async findOne(id: string) {
-    return this.findPublicById(id);
+    const user = await this.users.findById(id).lean().exec();
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    return toPublicUser(user as Record<string, unknown>);
   }
 
   async update(id: string, dto: UpdateUserDto) {
     const data: Record<string, unknown> = {};
-
-    if (dto.username !== undefined) {
-      data.username = dto.username.trim().toLowerCase();
+    if (dto.email !== undefined) {
+      data.email = dto.email.trim().toLowerCase();
+    }
+    if (dto.name !== undefined) {
+      data.name = dto.name.trim();
     }
     if (dto.password !== undefined) {
       data.passwordHash = await hashUserPassword(dto.password);
     }
-    if (dto.lastAccess !== undefined) {
-      data.lastAccess = new Date(dto.lastAccess);
-    }
     if (dto.role !== undefined) {
       data.role = dto.role;
     }
+    if (dto.isActive !== undefined) {
+      data.isActive = dto.isActive;
+    }
 
     if (Object.keys(data).length === 0) {
-      return this.findPublicById(id);
+      return this.findOne(id);
     }
 
     try {
       const updated = await this.users
         .findByIdAndUpdate(id, data, { new: true, runValidators: true })
-        .select('-passwordHash')
         .lean()
         .exec();
-
       if (!updated) {
         throw new NotFoundException('Usuario no encontrado');
       }
-      return updated;
+      return toPublicUser(updated as Record<string, unknown>);
     } catch (e) {
-      this.throwIfDuplicateUsername(e);
+      this.throwIfDuplicate(e);
       throw e;
     }
   }
@@ -169,47 +155,40 @@ export class UsersService implements OnModuleInit {
     return { ok: true };
   }
 
-  /** Marca último acceso ahora (útil tras un login, etc.). */
-  touchLastAccess(id: string) {
-    return this.update(id, { lastAccess: new Date().toISOString() });
+  async touchLastAccess(id: string) {
+    await this.users
+      .findByIdAndUpdate(id, { lastAccess: new Date() })
+      .exec();
   }
 
-  /**
-   * Credenciales para login: incluye `passwordHash` (bcrypt).
-   */
-  async findByUsername(username: string) {
-    const normalized = username.trim().toLowerCase();
+  async findByEmailForAuth(email: string) {
+    const normalized = email.trim().toLowerCase();
     const user = await this.users
-      .findOne({ username: normalized })
+      .findOne({ email: normalized })
       .select('+passwordHash')
       .lean()
       .exec();
     if (!user) {
       return null;
     }
+    const u = user as Record<string, unknown>;
     return {
-      id: String(user._id),
-      username: user.username,
-      passwordHash: user.passwordHash,
-      role: (user.role as UserRole | undefined) ?? UserRole.User,
+      id: String(u._id),
+      email: u.email as string,
+      name: u.name as string,
+      passwordHash: u.passwordHash as string,
+      role: (u.role as UserRole) ?? UserRole.Reader,
+      isActive: Boolean(u.isActive ?? true),
     };
   }
 
-  /** Usuario público (sin hash) o 404. */
-  private async findPublicById(id: string) {
-    const user = await this.users.findById(id).lean().exec();
-    if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
-    return user;
-  }
-
-  private throwIfDuplicateUsername(error: unknown) {
-    const code = error && typeof error === 'object' && 'code' in error
-      ? (error as { code: number }).code
-      : undefined;
+  private throwIfDuplicate(error: unknown) {
+    const code =
+      error && typeof error === 'object' && 'code' in error
+        ? (error as { code: number }).code
+        : undefined;
     if (code === 11000) {
-      throw new ConflictException('Ese nombre de usuario ya existe');
+      throw new ConflictException('Ese email ya está registrado');
     }
   }
 }

@@ -9,12 +9,15 @@ import {
   Query,
 } from '@nestjs/common';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
-import { Public } from '../auth/decorators/public.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import {
   PAGINATION_DEFAULT_LIMIT,
   PAGINATION_DEFAULT_PAGE,
   PaginationQueryDto,
 } from '../common/dto/pagination-query.dto';
+import { UserRole } from '../common/enums';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
@@ -23,12 +26,18 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Public()
+  @Get('me')
+  findMe(@CurrentUser() user: JwtPayload) {
+    return this.usersService.findOne(user.sub);
+  }
+
+  @Roles(UserRole.Admin)
   @Post()
   create(@Body() body: CreateUserDto) {
     return this.usersService.create(body);
   }
 
+  @Roles(UserRole.Admin)
   @Get()
   findAll(@Query() query: PaginationQueryDto) {
     const page = query.page ?? PAGINATION_DEFAULT_PAGE;
@@ -36,16 +45,13 @@ export class UsersController {
     return this.usersService.findAll(page, limit);
   }
 
+  @Roles(UserRole.Admin)
   @Get(':id')
   findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
-  @Patch(':id/last-access')
-  touchLastAccess(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.usersService.touchLastAccess(id);
-  }
-
+  @Roles(UserRole.Admin)
   @Patch(':id')
   update(
     @Param('id', ParseObjectIdPipe) id: string,
@@ -54,6 +60,7 @@ export class UsersController {
     return this.usersService.update(id, body);
   }
 
+  @Roles(UserRole.Admin)
   @Delete(':id')
   remove(@Param('id', ParseObjectIdPipe) id: string) {
     return this.usersService.remove(id);
