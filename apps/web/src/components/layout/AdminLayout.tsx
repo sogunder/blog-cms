@@ -34,8 +34,8 @@ export const AdminLayout = () => {
     { label: 'Entradas', icon: FileText, path: '/admin/posts' },
     { label: 'Comentarios', icon: MessageSquare, path: '/admin/comments' },
     { label: 'Categorías', icon: Tags, path: '/admin/categories' },
-    { label: 'Usuarios', icon: Users, path: '/admin/users' },
-  ];
+    { label: 'Usuarios', icon: Users, path: '/admin/users', roles: ['admin'] },
+  ].filter(item => !item.roles || (user && item.roles.includes(user.role)));
 
   return (
     <div className="flex h-screen bg-gray-50/50">
