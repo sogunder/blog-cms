@@ -1,6 +1,9 @@
 import { Link, Outlet } from 'react-router-dom';
+import { useAuthStore } from '../../app/store/useAuthStore';
+import { PublicUserMenu } from './PublicUserMenu';
 
 export const PublicLayout = () => {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return (
     <div className="min-h-screen bg-gray-50/50 flex flex-col">
       <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
@@ -27,18 +30,24 @@ export const PublicLayout = () => {
           </nav>
 
           <div className="flex items-center space-x-6">
-            <Link
-              to="/login"
-              className="text-sm font-bold text-gray-900 hover:text-google-blue transition-colors px-4 py-2"
-            >
-              Entrar
-            </Link>
-            <Link
-              to="/login"
-              className="bg-google-blue text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-600 transition-all shadow-md shadow-blue-100"
-            >
-              Empezar
-            </Link>
+            {isAuthenticated ? (
+              <PublicUserMenu />
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-bold text-gray-900 hover:text-google-blue transition-colors px-4 py-2"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  to="/login"
+                  className="bg-google-blue text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-600 transition-all shadow-md shadow-blue-100"
+                >
+                  Empezar
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

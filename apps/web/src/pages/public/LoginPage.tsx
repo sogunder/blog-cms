@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -20,6 +20,9 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const hasHydrated = useAuthStore((s) => s.hasHydrated);
   
   const from = (location.state as any)?.from?.pathname || '/admin';
 
@@ -30,6 +33,13 @@ export const LoginPage = () => {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
+
+  if (hasHydrated && isAuthenticated && user) {
+    if (user.role === 'admin' || user.role === 'editor') {
+      return <Navigate to={from} replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
 
   const onSubmit = async (data: LoginFormValues) => {
     try {

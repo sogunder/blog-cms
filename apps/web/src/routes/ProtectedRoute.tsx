@@ -7,8 +7,16 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ roles }: ProtectedRouteProps) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, hasHydrated } = useAuthStore();
   const location = useLocation();
+
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/50 text-gray-500 text-sm font-medium">
+        Cargando sesión…
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
