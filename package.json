@@ -21,6 +21,8 @@
     "test:watch": "pnpm -r test:watch",
     "clean": "pnpm -r exec rm -rf dist node_modules && rm -rf node_modules",
     "install:all": "pnpm install",
+    "seed:users": "pnpm -C apps/api seed:users",
+    "seed:demo": "pnpm -C apps/api seed:demo",
     "prepare": "husky install"
   },
   "devDependencies": {
