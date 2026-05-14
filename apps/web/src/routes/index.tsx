@@ -6,31 +6,11 @@ import { LoginPage } from '../pages/public/LoginPage';
 import { DashboardPage } from '../pages/admin/DashboardPage';
 import { PostsPage } from '../pages/admin/PostsPage';
 import { PostDetailPage } from '../pages/public/PostDetailPage';
-
-// Componentes adicionales en español con estilo Google
-const Home = () => (
-  <div className="text-center py-24">
-    <div className="inline-flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-full mb-8 border border-blue-100">
-      <span className="flex h-2 w-2 rounded-full bg-google-blue animate-pulse"></span>
-      <span className="text-sm font-bold text-google-blue uppercase tracking-widest">Plataforma de Nueva Generación</span>
-    </div>
-    <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-8 tracking-tight leading-tight">
-      Bienvenido a <span className="text-google-blue">Blog CMS</span>
-    </h1>
-    <p className="text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed font-medium mb-12">
-      Una plataforma de blog moderna y de alto rendimiento construida con React 19, NestJS y MongoDB. 
-      Diseñada para ofrecer velocidad, diseño y una experiencia de usuario excepcional.
-    </p>
-    <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-      <button className="bg-google-blue text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-blue-600 transition-all shadow-xl shadow-blue-100 hover:-translate-y-1">
-        Explorar Entradas
-      </button>
-      <button className="bg-white text-gray-900 border-2 border-gray-100 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-all hover:-translate-y-1">
-        Saber Más
-      </button>
-    </div>
-  </div>
-);
+import { HomePage } from '../pages/public/HomePage';
+import { PostEditorPage } from '../pages/admin/PostEditorPage';
+import { CommentsPage } from '../pages/admin/CommentsPage';
+import { UsersPage } from '../pages/admin/UsersPage';
+import { CategoriesPage } from '../pages/admin/CategoriesPage';
 
 const Unauthorized = () => (
   <div className="flex items-center justify-center min-h-[60vh]">
@@ -57,7 +37,7 @@ export const router = createBrowserRouter([
     path: '/',
     element: <PublicLayout />,
     children: [
-      { index: true, element: <Home /> },
+      { index: true, element: <HomePage /> },
       { path: 'post/:slug', element: <PostDetailPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'unauthorized', element: <Unauthorized /> },
@@ -72,13 +52,14 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'posts', element: <PostsPage /> },
-          { path: 'posts/new', element: <div className="p-8 text-center text-gray-500 font-bold bg-white rounded-3xl border border-dashed">Editor de Nueva Entrada (TipTap)</div> },
-          { path: 'posts/:id/edit', element: <div className="p-8 text-center text-gray-500 font-bold bg-white rounded-3xl border border-dashed">Editor de Entrada Existente (TipTap)</div> },
-          { path: 'comments', element: <div className="p-8 text-center text-gray-500 font-bold bg-white rounded-3xl border border-dashed">Tabla de Comentarios Administrativa</div> },
+          { path: 'posts/new', element: <PostEditorPage /> },
+          { path: 'posts/:id/edit', element: <PostEditorPage /> },
+          { path: 'categories', element: <CategoriesPage /> },
+          { path: 'comments', element: <CommentsPage /> },
           {
             path: 'users',
             element: <ProtectedRoute roles={['admin']} />,
-            children: [{ index: true, element: <div className="p-8 text-center text-gray-500 font-bold bg-white rounded-3xl border border-dashed">Tabla de Gestión de Usuarios</div> }],
+            children: [{ index: true, element: <UsersPage /> }],
           },
         ],
       },

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useAuthStore } from '../../app/store/useAuthStore';
+import { authService } from '../../services/auth.service';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'El usuario o email es requerido'),
@@ -31,44 +32,19 @@ export const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const response = await authService.login(data);
       
-      // Lógica de Seeder / Usuarios de Prueba
-      if (data.email === 'vicente' && data.password === 'vicente') {
-        setAuth(
-          { 
-            id: 'v1', 
-            name: 'Vicente Admin', 
-            email: 'vicente@cms.com', 
-            role: 'admin', 
-            createdAt: new Date().toISOString() 
-          },
-          'token-vicente-admin'
-        );
-        toast.success('¡Bienvenido, Vicente!');
+      setAuth(response.user, response.token);
+      toast.success(`¡Bienvenido de nuevo, ${response.user.name}!`);
+      
+      if (response.user.role === 'admin' || response.user.role === 'editor') {
         navigate(from, { replace: true });
-        return;
-      }
-
-      if (data.email === 'user' && data.password === 'user') {
-        setAuth(
-          { 
-            id: 'u1', 
-            name: 'Usuario Común', 
-            email: 'user@cms.com', 
-            role: 'reader', 
-            createdAt: new Date().toISOString() 
-          },
-          'token-usuario-comun'
-        );
-        toast.success('Sesión iniciada correctamente');
+      } else {
         navigate('/', { replace: true });
-        return;
       }
-
-      toast.error('Credenciales incorrectas (Prueba: vicente/vicente)');
-    } catch (error) {
-      toast.error('Error al intentar iniciar sesión');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Error al intentar iniciar sesión';
+      toast.error(message);
     }
   };
 

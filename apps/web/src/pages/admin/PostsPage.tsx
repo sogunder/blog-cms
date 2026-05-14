@@ -1,40 +1,42 @@
+import { useState, useEffect } from 'react';
 import { DataTable } from '../../components/ui/DataTable';
 import type { Post } from '../../types';
 import { Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const MOCK_POSTS: Post[] = [
-  {
-    id: '1',
-    title: 'Primeros pasos con React 19',
-    slug: 'primeros-pasos-react-19',
-    content: '',
-    summary: 'Una guía rápida sobre las nuevas características de React 19.',
-    status: 'published',
-    views: 1250,
-    author: { id: 'v1', name: 'Vicente Admin', email: '', role: 'admin', createdAt: '' },
-    category: { id: 'c1', name: 'Desarrollo', slug: 'dev' },
-    tags: [],
-    createdAt: '2026-05-10T10:00:00Z',
-    updatedAt: '2026-05-10T10:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'CSS Moderno con Tailwind v4',
-    slug: 'css-moderno-tailwind-v4',
-    content: '',
-    summary: 'Dominando el nuevo motor CSS-first de Tailwind v4.',
-    status: 'draft',
-    views: 0,
-    author: { id: 'v1', name: 'Vicente Admin', email: '', role: 'admin', createdAt: '' },
-    category: { id: 'c1', name: 'Diseño', slug: 'design' },
-    tags: [],
-    createdAt: '2026-05-12T14:30:00Z',
-    updatedAt: '2026-05-12T14:30:00Z',
-  },
-];
+import { postService } from '../../services/post.service';
+import { toast } from 'sonner';
 
 export const PostsPage = () => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  const loadPosts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await postService.getAdminPosts(1, 100);
+      setPosts(response.data);
+    } catch (error) {
+      toast.error('Error al cargar las entradas');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar esta entrada?')) return;
+    try {
+      await postService.deletePost(id);
+      toast.success('Entrada eliminada');
+      loadPosts();
+    } catch (error) {
+      toast.error('No se pudo eliminar la entrada');
+    }
+  };
+
   const columns = [
     { header: 'Título', accessor: 'title' as keyof Post },
     { 
@@ -63,7 +65,10 @@ export const PostsPage = () => {
           <Link to={`/admin/posts/${post.id}/edit`} className="p-1.5 text-gray-400 hover:text-google-blue transition-colors">
             <Edit size={18} />
           </Link>
-          <button className="p-1.5 text-gray-400 hover:text-google-red transition-colors">
+          <button 
+            onClick={() => handleDelete(post.id)}
+            className="p-1.5 text-gray-400 hover:text-google-red transition-colors"
+          >
             <Trash2 size={18} />
           </button>
         </div>
@@ -88,7 +93,11 @@ export const PostsPage = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <DataTable columns={columns} data={MOCK_POSTS} />
+        {isLoading ? (
+          <div className="p-12 text-center text-gray-500 font-medium">Cargando entradas...</div>
+        ) : (
+          <DataTable columns={columns} data={posts} />
+        )}
       </div>
     </div>
   );
