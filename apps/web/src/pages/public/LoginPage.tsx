@@ -7,10 +7,11 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useAuthStore } from '../../app/store/useAuthStore';
 import { authService } from '../../services/auth.service';
+import { getApiErrorMessage } from '../../utils/api-error';
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'El usuario o email es requerido'),
-  password: z.string().min(4, 'La contraseña debe tener al menos 4 caracteres'),
+  email: z.string().min(1, 'El correo es requerido').email('Introduce un correo válido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -42,9 +43,8 @@ export const LoginPage = () => {
       } else {
         navigate('/', { replace: true });
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al intentar iniciar sesión';
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Error al intentar iniciar sesión'));
     }
   };
 
@@ -61,9 +61,9 @@ export const LoginPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Input
-            label="Usuario o Correo"
-            type="text"
-            placeholder="vicente"
+            label="Correo electrónico"
+            type="email"
+            placeholder="admin@ejemplo.com"
             {...register('email')}
             error={errors.email?.message}
           />
@@ -80,10 +80,6 @@ export const LoginPage = () => {
             Continuar
           </Button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-gray-50 text-center text-sm text-gray-400 font-medium">
-          <p>Credenciales de prueba: <span className="text-google-blue">vicente / vicente</span></p>
-        </div>
       </div>
     </div>
   );

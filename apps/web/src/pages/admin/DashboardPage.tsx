@@ -2,17 +2,18 @@ import { useState, useEffect } from 'react';
 import { 
   FileText, 
   MessageSquare, 
-  Users, 
   Eye, 
   TrendingUp, 
   CheckCircle2, 
   Clock 
 } from 'lucide-react';
-import { ReactNode } from 'react';
-import { statsService, DashboardStats } from '../../services/stats.service';
+import { type ReactNode } from 'react';
+import { statsService, type DashboardStats } from '../../services/stats.service';
 import { postService } from '../../services/post.service';
-import type { Post } from '../../types';
+import { commentService } from '../../services/comment.service';
+import type { Post, Comment } from '../../types';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface StatCardProps {
   title: string;
@@ -43,18 +44,21 @@ const StatCard = ({ title, value, icon, trend, color }: StatCardProps) => (
 export const DashboardPage = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
+  const [recentComments, setRecentComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
         setIsLoading(true);
-        const [statsData, postsData] = await Promise.all([
+        const [statsData, postsData, commentsData] = await Promise.all([
           statsService.getDashboardStats(),
           postService.getAdminPosts(1, 5),
+          commentService.getAdminComments(1, 5),
         ]);
         setStats(statsData);
         setRecentPosts(postsData.data);
+        setRecentComments(commentsData.data);
       } catch (error) {
         toast.error('Error al cargar datos del dashboard');
       } finally {
@@ -138,14 +142,50 @@ export const DashboardPage = () => {
         </div>
 
         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <MessageSquare size={20} className="mr-3 text-google-blue" />
-            Comentarios Recientes
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <MessageSquare size={20} className="mr-3 text-google-blue" />
+              Comentarios recientes
+            </h2>
+            <Link
+              to="/admin/comments"
+              className="text-xs font-bold text-google-blue hover:text-blue-700 uppercase tracking-wider"
+            >
+              Ver todos
+            </Link>
+          </div>
           <div className="space-y-4">
-            <div className="p-8 text-center text-gray-400 font-medium bg-gray-50 rounded-2xl border border-dashed">
-              Próximamente: Actividad de comentarios en tiempo real
-            </div>
+            {recentComments.length === 0 ? (
+              <div className="p-8 text-center text-gray-400 font-medium bg-gray-50 rounded-2xl border border-dashed">
+                Sin comentarios recientes
+              </div>
+            ) : (
+              recentComments.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex flex-col gap-1 p-4 hover:bg-gray-50 rounded-2xl transition-colors border border-transparent hover:border-gray-100"
+                >
+                  <p className="text-sm font-bold text-gray-900">{c.user.name}</p>
+                  <p className="text-xs text-gray-500 line-clamp-2">{c.content}</p>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate max-w-[60%]">
+                      {c.post?.title ?? '—'}
+                    </span>
+                    <span
+                      className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                        c.status === 'approved'
+                          ? 'bg-green-50 text-google-green'
+                          : c.status === 'spam'
+                            ? 'bg-red-50 text-google-red'
+                            : 'bg-yellow-50 text-google-yellow'
+                      }`}
+                    >
+                      {c.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

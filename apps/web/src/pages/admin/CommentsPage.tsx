@@ -64,7 +64,7 @@ export const CommentsPage = () => {
     },
     { 
       header: 'Post', 
-      accessor: (c: any) => c.post?.title || 'N/A'
+      accessor: (c: Comment) => c.post?.title ?? 'N/A'
     },
     { 
       header: 'Estado', 

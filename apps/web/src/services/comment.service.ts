@@ -2,9 +2,16 @@ import api from './api';
 import type { Comment } from '../types';
 import type { PaginatedResult } from './post.service';
 
+export interface CreateCommentPayload {
+  post: string;
+  content: string;
+  guestName?: string;
+  guestEmail?: string;
+}
+
 export const commentService = {
   // Public
-  async createComment(commentData: any): Promise<Comment> {
+  async createComment(commentData: CreateCommentPayload): Promise<Comment> {
     const { data } = await api.post('/comments', commentData);
     return data;
   },

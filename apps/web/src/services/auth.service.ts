@@ -1,8 +1,13 @@
 import api from './api';
 import type { User, AuthResponse } from '../types';
 
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
 export const authService = {
-  async login(credentials: any): Promise<AuthResponse> {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const { data } = await api.post('/auth/login', credentials);
     return {
       user: data.user,
@@ -11,8 +16,8 @@ export const authService = {
   },
 
   async verify(): Promise<{ valid: boolean; user: User }> {
-    const { data } = await api.get('/auth/verify');
-    return data;
+    const { data } = await api.get<{ valid: boolean; user: User }>('/auth/verify');
+    return { valid: data.valid, user: data.user };
   },
 
   async logout(): Promise<void> {

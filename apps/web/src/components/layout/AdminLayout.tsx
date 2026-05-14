@@ -1,12 +1,12 @@
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../app/store/useAuthStore';
+import { authService } from '../../services/auth.service';
 import { 
   LayoutDashboard, 
   FileText, 
   MessageSquare, 
   Users, 
   Tags, 
-  Settings, 
   LogOut,
   User as UserIcon,
   Search,
@@ -19,7 +19,12 @@ export const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      /* sesión ya inválida */
+    }
     logout();
     navigate('/login');
   };
@@ -30,7 +35,6 @@ export const AdminLayout = () => {
     { label: 'Comentarios', icon: MessageSquare, path: '/admin/comments' },
     { label: 'Categorías', icon: Tags, path: '/admin/categories' },
     { label: 'Usuarios', icon: Users, path: '/admin/users' },
-    { label: 'Ajustes', icon: Settings, path: '/admin/settings' },
   ];
 
   return (

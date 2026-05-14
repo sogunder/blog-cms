@@ -4,9 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { getApiErrorMessage } from '../../utils/api-error';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { postService } from '../../services/post.service';
+import { postService, type PostWritePayload } from '../../services/post.service';
 import { categoryService } from '../../services/category.service';
 import { tagService } from '../../services/tag.service';
 import type { Category, Tag } from '../../types';
@@ -18,8 +19,8 @@ const postSchema = z.object({
   summary: z.string().min(10, 'El resumen debe tener al menos 10 caracteres'),
   content: z.string().min(20, 'El contenido es muy corto'),
   category: z.string().min(1, 'La categoría es obligatoria'),
-  tags: z.array(z.string()).default([]),
-  status: z.enum(['published', 'draft']).default('draft'),
+  tags: z.array(z.string()),
+  status: z.enum(['published', 'draft']),
 });
 
 type PostFormValues = z.infer<typeof postSchema>;
@@ -65,7 +66,7 @@ export const PostEditorPage = () => {
           setValue('slug', post.slug);
           setValue('summary', post.summary);
           setValue('content', post.content);
-          setValue('category', post.category.id);
+          setValue('category', post.category?.id ?? '');
           setValue('tags', post.tags.map(t => t.id));
           setValue('status', post.status);
         }
@@ -81,16 +82,27 @@ export const PostEditorPage = () => {
 
   const onSubmit = async (data: PostFormValues) => {
     try {
+      const payload: PostWritePayload = {
+        title: data.title,
+        summary: data.summary,
+        content: data.content,
+        category: data.category,
+        tags: data.tags,
+        status: data.status,
+      };
+      const slugTrim = data.slug?.trim();
+      if (slugTrim) payload.slug = slugTrim;
+
       if (isEdit && id) {
-        await postService.updatePost(id, data);
+        await postService.updatePost(id, payload);
         toast.success('Entrada actualizada correctamente');
       } else {
-        await postService.createPost(data);
+        await postService.createPost(payload);
         toast.success('Entrada creada correctamente');
       }
       navigate('/admin/posts');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al guardar la entrada');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Error al guardar la entrada'));
     }
   };
 

@@ -6,7 +6,8 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
-  createdAt: string;
+  /** Ausente en respuestas derivadas solo del JWT (p. ej. /auth/verify). */
+  createdAt?: string;
 }
 
 export type PostStatus = 'published' | 'draft';
@@ -17,8 +18,8 @@ export interface Post {
   slug: string;
   content: string;
   summary: string;
-  author: User;
-  category: Category;
+  author: User | null;
+  category: Category | null;
   tags: Tag[];
   status: PostStatus;
   views: number;
@@ -40,11 +41,17 @@ export interface Tag {
   slug: string;
 }
 
+export interface CommentPostRef {
+  id: string;
+  title: string;
+  slug: string;
+}
+
 export interface Comment {
   id: string;
   content: string;
   user: User;
-  post: string; // post ID
+  post: CommentPostRef | null;
   status: 'pending' | 'approved' | 'spam';
   createdAt: string;
 }

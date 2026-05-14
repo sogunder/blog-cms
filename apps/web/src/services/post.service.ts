@@ -1,5 +1,15 @@
 import api from './api';
-import type { Post } from '../types';
+import type { Post, PostStatus } from '../types';
+
+export interface PostWritePayload {
+  title: string;
+  slug?: string;
+  summary: string;
+  content: string;
+  category: string;
+  tags?: string[];
+  status?: PostStatus;
+}
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -32,12 +42,12 @@ export const postService = {
     return data;
   },
 
-  async createPost(postData: any): Promise<Post> {
+  async createPost(postData: PostWritePayload): Promise<Post> {
     const { data } = await api.post('/admin/posts', postData);
     return data;
   },
 
-  async updatePost(id: string, postData: any): Promise<Post> {
+  async updatePost(id: string, postData: PostWritePayload): Promise<Post> {
     const { data } = await api.patch(`/admin/posts/${id}`, postData);
     return data;
   },

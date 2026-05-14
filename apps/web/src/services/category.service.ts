@@ -8,11 +8,6 @@ export const categoryService = {
     return data;
   },
 
-  async getCategoryBySlug(slug: string): Promise<Category> {
-    const { data } = await api.get(`/categories/slug/${slug}`);
-    return data;
-  },
-
   // Admin
   async getAdminCategories(): Promise<Category[]> {
     const { data } = await api.get('/admin/categories');

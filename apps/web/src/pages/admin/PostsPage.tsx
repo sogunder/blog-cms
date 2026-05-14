@@ -49,7 +49,7 @@ export const PostsPage = () => {
         </span>
       )
     },
-    { header: 'Autor', accessor: (post: Post) => post.author.name },
+    { header: 'Autor', accessor: (post: Post) => post.author?.name ?? '—' },
     { header: 'Vistas', accessor: 'views' as keyof Post },
     { 
       header: 'Fecha', 

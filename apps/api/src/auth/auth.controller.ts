@@ -30,7 +30,15 @@ export class AuthController {
 
   @Get('verify')
   verifyToken(@CurrentUser() user: JwtPayload) {
-    return { valid: true, user };
+    return {
+      valid: true,
+      user: {
+        id: user.sub,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
   }
 
   @Post('logout')

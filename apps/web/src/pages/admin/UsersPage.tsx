@@ -65,7 +65,10 @@ export const UsersPage = () => {
     },
     { 
       header: 'Miembro desde', 
-      accessor: (u: User) => new Date(u.createdAt).toLocaleDateString()
+      accessor: (u: User) =>
+        u.createdAt
+          ? new Date(u.createdAt).toLocaleDateString()
+          : '—',
     },
     {
       header: 'Acciones',
