@@ -16,19 +16,37 @@ Este es un monorepo para un sistema de gestión de contenidos (CMS) de blog, uti
   corepack enable
   ```
 
-## Instalación y Ejecución rápida
+## Instalación y Ejecución rápida (en carpeta raiz)
 
-1. **Instalar dependencias:**
+1. **Levantar la base de datos (Docker):**
+   Es necesario levantar la infraestructura (MongoDB) antes de ejecutar la aplicación o los seeders.
+   ```bash
+   docker compose -f infra/docker-compose.yml up -d
+   ```
+
+2. **Instalar dependencias:**
    ```bash
    pnpm install
    ```
 
-2. **Ejecutar en modo desarrollo (ambos proyectos a la vez):**
+3. **Ejecutar seeders (poblar la base de datos):**
+   Una vez levantada la base de datos, puedes insertar datos iniciales. 
+   - `seed:users`: Crea el usuario base/administrador.
+   - `seed:demo`: Puebla la base de datos con datos de prueba (posts, comentarios, categorías).
+   
+   Ejecútalos de forma secuencial:
+   ```bash
+   pnpm run seed:users && pnpm run seed:demo
+   ```
+
+4. **Ejecutar en modo desarrollo (ambos proyectos a la vez):**
    ```bash
    pnpm dev
    ```
 
 El backend estará disponible en `http://localhost:3000` y el frontend en `http://localhost:5173`.
+
+La documentacion de la api estara disponible en `http://localhost:3000/docs`.
 
 ## Otros comandos útiles
 
