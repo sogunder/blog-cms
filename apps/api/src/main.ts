@@ -22,6 +22,13 @@ async function bootstrap() {
     .setTitle('Blog CMS API')
     .setDescription('The Blog CMS API description')
     .setVersion('1.0')
+    .addTag('posts')
+    .addTag('categories')
+    .addTag('tags')
+    .addTag('comments')
+    .addTag('auth')
+    .addTag('users')
+    .addTag('stats')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
