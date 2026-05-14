@@ -4,12 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Post, PostDocument } from '../posts/schemas/post.schema';
 import { PostsService } from '../posts/posts.service';
 import { PostStatus } from '../common/enums';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { slugify } from '../common/utils/slug';
 import { Category, CategoryDocument } from './schemas/category.schema';
 
 type CategoryRow = {
@@ -38,10 +39,14 @@ export class CategoriesService {
   ) {}
 
   async create(dto: CreateCategoryDto) {
+    const name = dto.name.trim();
+    const rawSlug = dto.slug?.trim();
+    const base = rawSlug ? slugify(rawSlug) : slugify(name);
+    const slug = await this.uniqueSlug(base || 'categoria');
     try {
       const doc = await this.categories.create({
-        name: dto.name.trim(),
-        slug: dto.slug.trim().toLowerCase(),
+        name,
+        slug,
       });
       return doc.toObject();
     } catch (e) {
@@ -109,8 +114,8 @@ export class CategoriesService {
     if (dto.name !== undefined) {
       data.name = dto.name.trim();
     }
-    if (dto.slug !== undefined) {
-      data.slug = dto.slug.trim().toLowerCase();
+    if (dto.slug !== undefined && dto.slug.trim() !== '') {
+      data.slug = await this.uniqueSlug(slugify(dto.slug.trim()), id);
     }
     try {
       const updated = await this.categories
@@ -145,6 +150,25 @@ export class CategoriesService {
       throw new NotFoundException('Categoría no encontrada');
     }
     return { ok: true };
+  }
+
+  private async uniqueSlug(base: string, excludeId?: string) {
+    let slug = (base || 'categoria').toLowerCase().slice(0, 120);
+    let n = 0;
+    while (true) {
+      const q: Record<string, unknown> = { slug };
+      if (excludeId) {
+        q._id = { $ne: new Types.ObjectId(excludeId) };
+      }
+      const exists = await this.categories.exists(q).exec();
+      if (!exists) {
+        return slug;
+      }
+      n += 1;
+      const suffix = `-${n}`;
+      const max = 120 - suffix.length;
+      slug = `${(base || 'categoria').toLowerCase().slice(0, Math.max(1, max))}${suffix}`;
+    }
   }
 
   private throwIfDup(error: unknown) {
