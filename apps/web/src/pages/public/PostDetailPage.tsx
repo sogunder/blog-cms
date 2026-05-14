@@ -85,13 +85,6 @@ export const PostDetailPage = () => {
       <div className="max-w-4xl mx-auto">
         <PostHeader post={post} />
         
-        {/* Placeholder for Featured Image if not exists */}
-        <div className="w-full aspect-video bg-gradient-to-br from-primary-50 to-blue-50 rounded-[2.5rem] mb-12 flex items-center justify-center overflow-hidden border border-primary-100/50 shadow-inner">
-           <div className="text-primary-200 opacity-50 select-none transform -rotate-12 scale-150">
-             <span className="text-9xl font-black">BLOG</span>
-           </div>
-        </div>
-
         <PostContent post={post} />
         <PostTags post={post} />
         
