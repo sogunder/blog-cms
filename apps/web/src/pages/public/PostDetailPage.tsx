@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Post } from '../../types';
+import type { Post } from '../../types';
 
 // Mock post for demonstration
 const MOCK_POST: Post = {

@@ -1,5 +1,5 @@
 import { DataTable } from '../../components/ui/DataTable';
-import { Post } from '../../types';
+import type { Post } from '../../types';
 import { Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
