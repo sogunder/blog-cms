@@ -30,12 +30,12 @@ export const AdminLayout = () => {
   };
 
   const navItems = [
-    { label: 'Panel Control', icon: LayoutDashboard, path: '/admin' },
-    { label: 'Entradas', icon: FileText, path: '/admin/posts' },
-    { label: 'Comentarios', icon: MessageSquare, path: '/admin/comments' },
-    { label: 'Categorías', icon: Tags, path: '/admin/categories' },
+    { label: 'Panel Control', icon: LayoutDashboard, path: '/admin', roles: ['admin', 'editor', 'reader'] },
+    { label: 'Entradas', icon: FileText, path: '/admin/posts', roles: ['admin', 'editor', 'reader'] },
+    { label: 'Comentarios', icon: MessageSquare, path: '/admin/comments', roles: ['admin', 'editor'] },
+    { label: 'Categorías', icon: Tags, path: '/admin/categories', roles: ['admin', 'editor'] },
     { label: 'Usuarios', icon: Users, path: '/admin/users', roles: ['admin'] },
-  ].filter(item => !item.roles || (user && item.roles.includes(user.role)));
+  ].filter(item => user && item.roles.includes(user.role));
 
   return (
     <div className="flex h-screen bg-gray-50/50">

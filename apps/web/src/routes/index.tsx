@@ -45,17 +45,22 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <ProtectedRoute roles={['admin', 'editor']} />,
+    element: <ProtectedRoute roles={['admin', 'editor', 'reader']} />,
     children: [
       {
         element: <AdminLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'posts', element: <PostsPage /> },
-          { path: 'posts/new', element: <PostEditorPage /> },
-          { path: 'posts/:id/edit', element: <PostEditorPage /> },
-          { path: 'categories', element: <CategoriesPage /> },
-          { path: 'comments', element: <CommentsPage /> },
+          {
+            element: <ProtectedRoute roles={['admin', 'editor']} />,
+            children: [
+              { path: 'posts/new', element: <PostEditorPage /> },
+              { path: 'posts/:id/edit', element: <PostEditorPage /> },
+              { path: 'categories', element: <CategoriesPage /> },
+              { path: 'comments', element: <CommentsPage /> },
+            ],
+          },
           {
             path: 'users',
             element: <ProtectedRoute roles={['admin']} />,
