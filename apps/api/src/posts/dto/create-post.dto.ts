@@ -34,7 +34,7 @@ export class CreatePostDto {
   @MaxLength(500)
   summary?: string;
 
-  @ApiPropertyOptional({ enum: PostStatus, default: PostStatus.DRAFT })
+  @ApiPropertyOptional({ enum: PostStatus, default: PostStatus.Draft })
   @IsOptional()
   @IsEnum(PostStatus)
   status?: PostStatus;
