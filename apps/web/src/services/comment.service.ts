@@ -16,6 +16,11 @@ export const commentService = {
     return data;
   },
 
+  async getCommentsByPost(postId: string): Promise<Comment[]> {
+    const { data } = await api.get(`/comments/post/${postId}`);
+    return data;
+  },
+
   // Admin
   async getAdminComments(page = 1, limit = 10): Promise<PaginatedResult<Comment>> {
     const { data } = await api.get('/admin/comments', { params: { page, limit } });

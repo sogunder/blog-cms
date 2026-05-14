@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { Public } from '../auth/decorators/public.decorator';
 import { OptionalJwtGuard } from '../auth/optional-jwt.guard';
@@ -18,5 +18,11 @@ export class CommentsPublicController {
     @Req() req: Request & { user?: JwtPayload },
   ) {
     return this.comments.createPublic(dto, req.user);
+  }
+
+  @Public()
+  @Get('post/:postId')
+  getByPost(@Param('postId') postId: string) {
+    return this.comments.findByPostPublic(postId);
   }
 }

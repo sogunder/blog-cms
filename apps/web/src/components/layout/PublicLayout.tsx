@@ -84,7 +84,7 @@ export const PublicLayout = () => {
           </div>
         </div>
         <div className="container mx-auto px-6 mt-16 pt-8 border-t text-center text-sm text-gray-400 font-medium">
-          <p>&copy; {new Date().getFullYear()} Blog CMS. Hecho con pasión y React 19.</p>
+          <p>&copy; {new Date().getFullYear()} Blog CMS</p>
         </div>
       </footer>
     </div>

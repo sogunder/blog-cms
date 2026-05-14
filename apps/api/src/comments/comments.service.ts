@@ -149,4 +149,14 @@ export class CommentsService {
   async countPending() {
     return this.comments.countDocuments({ status: CommentStatus.Pending }).exec();
   }
+
+  async findByPostPublic(postId: string) {
+    const rows = await this.comments
+      .find({ post: new Types.ObjectId(postId), status: CommentStatus.Approved })
+      .sort({ createdAt: 1 })
+      .populate(populateList)
+      .lean()
+      .exec();
+    return rows.map((r) => mapComment(r));
+  }
 }
