@@ -21,8 +21,8 @@ export const PublicLayout = () => {
             <Link to="/" className="text-sm font-semibold text-gray-600 hover:text-google-blue transition-colors">
               Inicio
             </Link>
-            <Link to="/categories" className="text-sm font-semibold text-gray-600 hover:text-google-blue transition-colors">
-              Categorías
+            <Link to="/explore" className="text-sm font-semibold text-gray-600 hover:text-google-blue transition-colors">
+              Explorar
             </Link>
             <Link to="/about" className="text-sm font-semibold text-gray-600 hover:text-google-blue transition-colors">
               Sobre nosotros

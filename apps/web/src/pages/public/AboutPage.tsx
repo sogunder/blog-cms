@@ -1,4 +1,4 @@
-import { Mail, Zap, Lock, Smartphone, Search, TrendingUp, CheckCircle } from 'lucide-react';
+import { Mail, Zap, Lock, ScanEye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
@@ -6,68 +6,45 @@ export const AboutPage = () => {
   const features = [
     {
       icon: Zap,
-      title: 'Alto rendimiento',
-      description: 'Carga ultrarrápida con optimizaciones de vanguardia y CDN global'
+      title: 'Rápido',
+      description: 'Carga optimizada para la mejor experiencia de lectura'
     },
     {
       icon: Lock,
-      title: 'Seguridad',
-      description: 'Autenticación JWT avanzada y encriptación de datos en tránsito'
+      title: 'Seguro',
+      description: 'Autenticación segura y datos protegidos'
     },
     {
-      icon: Smartphone,
-      title: 'Responsive',
-      description: 'Diseño adaptable perfecto en cualquier dispositivo y pantalla'
-    },
-    {
-      icon: Search,
-      title: 'SEO',
-      description: 'Optimizado para motores de búsqueda con metadatos completos'
-    },
-    {
-      icon: TrendingUp,
-      title: 'Escalable',
-      description: 'Arquitectura preparada para crecer sin limitaciones'
-    },
-    {
-      icon: CheckCircle,
-      title: 'Gestión de contenido',
-      description: 'Editor intuitivo y panel de control poderoso'
+      icon: ScanEye ,
+      title: 'Diseño Moderno',
+      description: 'Interfaz limpia enfocada en una experiencia de lectura agradable'
     }
   ];
 
-  const stats = [
-    { value: '+500', label: 'Publicaciones' },
-    { value: '+10', label: 'Categorías' },
-    { value: '99.9%', label: 'Uptime' },
-    { value: 'Ultra', label: 'Alto rendimiento' }
-  ];
-
   const technologies = [
-    'React 19',
-    'NestJS',
-    'MongoDB',
-    'TailwindCSS',
-    'JWT',
-    'Cloud'
-  ];
-
-  const team = [
     {
-      role: 'Administrador Principal',
-      description: 'Liderazgo estratégico y gestión del proyecto'
+      name: 'React 19',
+      description: 'Interfaz moderna y reactiva'
     },
     {
-      role: 'Editor de Contenido',
-      description: 'Creación y curación de contenido de calidad'
+      name: 'TypeScript',
+      description: 'Código seguro y mantenible'
     },
     {
-      role: 'Backend Developer',
-      description: 'Desarrollo de APIs robustas y escalables'
+      name: 'MongoDB',
+      description: 'Base de datos flexible y escalable'
     },
     {
-      role: 'UI/UX Designer',
-      description: 'Diseño limpio y experiencia de usuario excepcional'
+      name: 'NestJS',
+      description: 'Backend robusto y estructurado'
+    },
+    {
+      name: 'JWT',
+      description: 'Autenticación segura'
+    },
+    {
+      name: 'TailwindCSS',
+      description: 'Estilos modernos y consistentes'
     }
   ];
 
@@ -75,7 +52,7 @@ export const AboutPage = () => {
     <div className="space-y-32 py-12 md:py-20">
       <Helmet>
         <title>Sobre Nosotros | Blog CMS</title>
-        <meta name="description" content="Conoce la historia, misión y equipo detrás de BlogCMS" />
+        <meta name="description" content="BlogCMS - Una plataforma moderna para crear y compartir contenido" />
       </Helmet>
 
       {/* Hero Section */}
@@ -115,64 +92,47 @@ export const AboutPage = () => {
         </div>
       </section>
 
-      {/* Historia y Estadísticas */}
-      <section className="space-y-16 px-4">
+      {/* Historia */}
+      <section className="space-y-12 px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8">
             Nuestra Historia
           </h2>
-          <p className="text-lg text-gray-600 leading-relaxed mb-8 font-medium">
-            BlogCMS surge como respuesta a un problema común: la necesidad de una plataforma 
-            de blogging moderna, rápida y fácil de usar. Combinamos las mejores tecnologías 
-            actuales con un enfoque centrado en el usuario.
+          <p className="text-lg text-gray-600 leading-relaxed mb-6 font-medium">
+            BlogCMS es una plataforma moderna diseñada para crear y compartir contenido de forma sencilla. 
+            Creemos que el contenido de calidad no necesita ser complicado.
           </p>
           <p className="text-lg text-gray-600 leading-relaxed font-medium">
-            Desde su lanzamiento, hemos ayudado a miles de creadores, empresas y profesionales 
-            a compartir su voz con el mundo. Nuestro compromiso es continuar innovando para 
-            ofrecerte las herramientas que necesitas para tener éxito.
+            Nuestro enfoque es ofrecer las herramientas necesarias para que puedas enfocarte en lo que realmente 
+            importa: tu contenido.
           </p>
-        </div>
-
-        {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center hover:shadow-xl hover:shadow-gray-200/50 transition-all hover:-translate-y-1"
-            >
-              <div className="text-4xl md:text-5xl font-extrabold text-blue-600 mb-2">
-                {stat.value}
-              </div>
-              <p className="text-gray-600 font-bold">{stat.label}</p>
-            </div>
-          ))}
         </div>
       </section>
 
       {/* Características */}
       <section className="space-y-12 px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-            Características Principales
+            Diseñado para la Simplicidad
           </h2>
-          <p className="text-lg text-gray-600 font-medium">
-            Diseñadas para ofrecerte el mejor desempeño
+          <p className="text-lg text-gray-600 font-medium max-w-2xl mx-auto">
+            Una plataforma moderna que pone el contenido en primer lugar
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {features.map((feature, idx) => {
             const IconComponent = feature.icon;
             return (
               <div
                 key={idx}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:shadow-gray-200/50 transition-all hover:-translate-y-1"
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:shadow-gray-200/50 transition-all hover:-translate-y-1 text-center"
               >
-                <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+                <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto">
                   <IconComponent size={24} className="text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 font-medium">{feature.description}</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600 font-medium text-sm">{feature.description}</p>
               </div>
             );
           })}
@@ -214,51 +174,25 @@ export const AboutPage = () => {
         </div>
       </section>
 
-      {/* Tecnologías */}
+      {/* Tecnologías y Arquitectura */}
       <section className="space-y-12 px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-            Stack Tecnológico
+            Tecnologías y Arquitectura
           </h2>
-          <p className="text-lg text-gray-600 font-medium mb-12">
-            Construido con las mejores herramientas modernas
-          </p>
-
-          <div className="flex flex-wrap gap-3">
-            {technologies.map((tech, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold text-sm hover:bg-blue-100 transition-colors cursor-default"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Equipo */}
-      <section className="space-y-12 px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">
-            Nuestro Equipo
-          </h2>
-          <p className="text-lg text-gray-600 font-medium mt-4">
-            Profesionales dedicados a la excelencia
+          <p className="text-lg text-gray-600 font-medium max-w-2xl mx-auto">
+            Construido con herramientas modernas y escalables
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {team.map((member, idx) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {technologies.map((tech, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:shadow-gray-200/50 transition-all hover:-translate-y-1"
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-xl hover:shadow-gray-200/50 transition-all hover:-translate-y-1 text-center"
             >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg mb-4">
-                {(member.role.charAt(0))}
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{member.role}</h3>
-              <p className="text-gray-600 font-medium">{member.description}</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{tech.name}</h3>
+              <p className="text-gray-600 font-medium text-sm">{tech.description}</p>
             </div>
           ))}
         </div>
