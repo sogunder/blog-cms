@@ -83,7 +83,7 @@ export const AboutPage = () => {
             Explorar Blog
           </Link>
           <button
-            onClick={() => alert('Formulario de contacto')}
+            onClick={() => alert('blogCMS@gmail.com')}
             className="inline-flex items-center justify-center px-8 py-3 rounded-full border-2 border-gray-200 text-gray-900 font-bold hover:border-blue-600 hover:text-blue-600 transition-all hover:shadow-lg hover:shadow-blue-600/10"
           >
             <Mail size={18} className="mr-2" />
