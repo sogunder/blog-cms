@@ -41,7 +41,7 @@ export const PublicLayout = () => {
                   Entrar
                 </Link>
                 <Link
-                  to="/login"
+                  to="/register"
                   className="bg-google-blue text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-600 transition-all shadow-md shadow-blue-100"
                 >
                   Empezar
