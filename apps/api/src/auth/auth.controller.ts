@@ -6,10 +6,20 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+
 import { AuthService } from './auth.service';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
+
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 
@@ -26,6 +36,14 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   signIn(@Body() dto: LoginDto) {
     return this.auth.signIn(dto.email, dto.password);
+  }
+
+  @Public()
+  @Post('register')
+  @ApiOperation({ summary: 'User register' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  register(@Body() registerDto: RegisterDto) {
+    return this.auth.register(registerDto);
   }
 
   @ApiBearerAuth()

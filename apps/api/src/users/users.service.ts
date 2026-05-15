@@ -15,14 +15,26 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { hashUserPassword } from './users.crypto';
 
-function toPublicUser(doc: unknown) {
+interface PublicUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+  lastAccess: unknown;
+  createdAt: unknown;
+  updatedAt: unknown;
+}
+
+function toPublicUser(doc: unknown): PublicUser {
   const d = doc as Record<string, unknown>;
+
   return {
     id: String(d._id),
-    email: d.email,
-    name: d.name,
-    role: d.role,
-    isActive: d.isActive,
+    email: d.email as string,
+    name: d.name as string,
+    role: d.role as UserRole,
+    isActive: Boolean(d.isActive),
     lastAccess: d.lastAccess,
     createdAt: d.createdAt,
     updatedAt: d.updatedAt,
@@ -43,16 +55,25 @@ export class UsersService implements OnModuleInit {
   }
 
   private async seedAdminFromEnv() {
-    const email = this.config.get<string>('SEED_ADMIN_EMAIL')?.trim().toLowerCase();
+    const email = this.config
+      .get<string>('SEED_ADMIN_EMAIL')
+      ?.trim()
+      .toLowerCase();
+
     const password = this.config.get<string>('SEED_ADMIN_PASSWORD');
+
     if (!email || !password) {
       return;
     }
+
     const exists = await this.users.exists({ email }).exec();
+
     if (exists) {
       return;
     }
+
     const passwordHash = await hashUserPassword(password);
+
     await this.users.create({
       email,
       name: this.config.get<string>('SEED_ADMIN_NAME', 'Administrador'),
@@ -61,11 +82,13 @@ export class UsersService implements OnModuleInit {
       isActive: true,
       lastAccess: null,
     });
+
     this.logger.log(`Usuario admin sembrado: ${email}`);
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto): Promise<PublicUser> {
     const passwordHash = await hashUserPassword(dto.password);
+
     try {
       const doc = await this.users.create({
         email: dto.email.trim().toLowerCase(),
@@ -75,6 +98,7 @@ export class UsersService implements OnModuleInit {
         isActive: dto.isActive ?? true,
         lastAccess: null,
       });
+
       return toPublicUser(doc.toObject());
     } catch (e) {
       this.throwIfDuplicate(e);
@@ -82,8 +106,12 @@ export class UsersService implements OnModuleInit {
     }
   }
 
-  async findAll(page: number, limit: number): Promise<PaginatedResult<unknown>> {
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResult<PublicUser>> {
     const skip = (page - 1) * limit;
+
     const [total, rows] = await Promise.all([
       this.users.countDocuments().exec(),
       this.users
@@ -94,6 +122,7 @@ export class UsersService implements OnModuleInit {
         .lean()
         .exec(),
     ]);
+
     return {
       data: rows.map((u) => toPublicUser(u)),
       total,
@@ -103,28 +132,35 @@ export class UsersService implements OnModuleInit {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<PublicUser> {
     const user = await this.users.findById(id).lean().exec();
+
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
+
     return toPublicUser(user);
   }
 
-  async update(id: string, dto: UpdateUserDto) {
+  async update(id: string, dto: UpdateUserDto): Promise<PublicUser> {
     const data: Record<string, unknown> = {};
+
     if (dto.email !== undefined) {
       data.email = dto.email.trim().toLowerCase();
     }
+
     if (dto.name !== undefined) {
       data.name = dto.name.trim();
     }
+
     if (dto.password !== undefined) {
       data.passwordHash = await hashUserPassword(dto.password);
     }
+
     if (dto.role !== undefined) {
       data.role = dto.role;
     }
+
     if (dto.isActive !== undefined) {
       data.isActive = dto.isActive;
     }
@@ -135,12 +171,17 @@ export class UsersService implements OnModuleInit {
 
     try {
       const updated = await this.users
-        .findByIdAndUpdate(id, data, { new: true, runValidators: true })
+        .findByIdAndUpdate(id, data, {
+          new: true,
+          runValidators: true,
+        })
         .lean()
         .exec();
+
       if (!updated) {
         throw new NotFoundException('Usuario no encontrado');
       }
+
       return toPublicUser(updated);
     } catch (e) {
       this.throwIfDuplicate(e);
@@ -150,29 +191,35 @@ export class UsersService implements OnModuleInit {
 
   async remove(id: string) {
     const deleted = await this.users.findByIdAndDelete(id).exec();
+
     if (!deleted) {
       throw new NotFoundException('Usuario no encontrado');
     }
+
     return { ok: true };
   }
 
   async touchLastAccess(id: string) {
-    await this.users
-      .findByIdAndUpdate(id, { lastAccess: new Date() })
-      .exec();
+    await this.users.findByIdAndUpdate(id, {
+      lastAccess: new Date(),
+    });
   }
 
   async findByEmailForAuth(email: string) {
     const normalized = email.trim().toLowerCase();
+
     const user = await this.users
       .findOne({ email: normalized })
       .select('+passwordHash')
       .lean()
       .exec();
+
     if (!user) {
       return null;
     }
+
     const u = user as Record<string, unknown>;
+
     return {
       id: String(u._id),
       email: u.email as string,
@@ -188,6 +235,7 @@ export class UsersService implements OnModuleInit {
       error && typeof error === 'object' && 'code' in error
         ? (error as { code: number }).code
         : undefined;
+
     if (code === 11000) {
       throw new ConflictException('Ese email ya está registrado');
     }

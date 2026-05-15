@@ -23,4 +23,13 @@ export const authService = {
   async logout(): Promise<void> {
     await api.post('/auth/logout');
   },
+
+  async register(data: {
+    name: string;
+    email: string;
+    password: string;
+  }) {
+  const response = await api.post('/auth/register', data);
+  return response.data;
+}
 };

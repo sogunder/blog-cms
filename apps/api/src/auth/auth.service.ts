@@ -1,9 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { UserRole } from '../common/enums';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
 import { UsersService } from '../users/users.service';
+import { ConflictException } from '@nestjs/common';
+import { RegisterDto } from './dto/register.dto';
+import * as bcrypt from 'bcrypt';
 
 export type { JwtPayload } from './interfaces/jwt-payload.interface';
 
@@ -46,6 +48,42 @@ export class AuthService {
 
     const access_token = await this.jwt.signAsync(payload);
     await this.users.touchLastAccess(user.id);
+
+    return {
+      access_token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
+  }
+
+  async register(registerDto: RegisterDto): Promise<LoginResponse> {
+    const existingUser = await this.users.findByEmailForAuth(
+      registerDto.email,
+    );
+
+    if (existingUser) {
+      throw new ConflictException('El correo ya está registrado');
+    }
+
+    const user = await this.users.create({
+      email: registerDto.email,
+      name: registerDto.name,
+      password: registerDto.password,
+      role: UserRole.Reader,
+    });
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
+
+    const access_token = await this.jwt.signAsync(payload);
 
     return {
       access_token,
