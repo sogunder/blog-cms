@@ -7,6 +7,7 @@ import { DashboardPage } from '../pages/admin/DashboardPage';
 import { PostsPage } from '../pages/admin/PostsPage';
 import { PostDetailPage } from '../pages/public/PostDetailPage';
 import { HomePage } from '../pages/public/HomePage';
+import { AboutPage } from '../pages/public/AboutPage';
 import { PostEditorPage } from '../pages/admin/PostEditorPage';
 import { CommentsPage } from '../pages/admin/CommentsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { index: true, element: <HomePage /> },
+      { path: 'about', element: <AboutPage /> },
       { path: 'post/:slug', element: <PostDetailPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'unauthorized', element: <Unauthorized /> },
