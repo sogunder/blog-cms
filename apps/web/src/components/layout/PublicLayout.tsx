@@ -67,19 +67,11 @@ export const PublicLayout = () => {
             </p>
           </div>
           <div>
-            <h4 className="font-bold text-gray-900 mb-6">Plataforma</h4>
-            <ul className="space-y-4 text-sm text-gray-500 font-medium">
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Características</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Integraciones</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Precios</Link></li>
-            </ul>
-          </div>
-          <div>
             <h4 className="font-bold text-gray-900 mb-6">Soporte</h4>
             <ul className="space-y-4 text-sm text-gray-500 font-medium">
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Documentación</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Referencia API</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Comunidad</Link></li>
+              <li><Link to="/documentation" className="hover:text-google-blue transition-colors">Documentación</Link></li>
+              <li><Link to="/api-reference" className="hover:text-google-blue transition-colors">Referencia API</Link></li>
+              <li><Link to="/community" className="hover:text-google-blue transition-colors">Comunidad</Link></li>
             </ul>
           </div>
         </div>
