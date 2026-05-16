@@ -1,11 +1,13 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../app/store/useAuthStore';
 import { PublicUserMenu } from './PublicUserMenu';
+import { ScrollToTop } from '../ScrollToTop';
 
 export const PublicLayout = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return (
     <div className="min-h-screen bg-gray-50/50 flex flex-col">
+      <ScrollToTop />
       <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
