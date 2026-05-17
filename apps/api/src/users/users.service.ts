@@ -15,7 +15,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { hashUserPassword } from './users.crypto';
 
-interface PublicUser {
+export interface PublicUser {
   id: string;
   email: string;
   name: string;
