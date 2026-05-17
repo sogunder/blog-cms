@@ -42,7 +42,6 @@ export const RegisterPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const setAuth = useAuthStore((state) => state.setAuth);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
@@ -67,17 +66,15 @@ export const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      const response = await authService.register({
+      await authService.register({
         name: data.name,
         email: data.email,
         password: data.password,
       });
 
-      setAuth(response.user, response.token);
+      toast.success('Cuenta creada correctamente. Ahora inicia sesión.');
 
-      toast.success(`¡Bienvenido, ${response.user.name}!`);
-
-      navigate(from, { replace: true });
+      navigate('/login', { replace: true });
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, 'Error al crear la cuenta'));
     }
