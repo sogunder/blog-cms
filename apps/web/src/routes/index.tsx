@@ -12,6 +12,9 @@ import { PostDetailPage } from '../pages/public/PostDetailPage';
 import { HomePage } from '../pages/public/HomePage';
 import { AboutPage } from '../pages/public/AboutPage';
 import { ExplorePage } from '../pages/public/ExplorePage';
+import { DocumentationPage } from '../pages/public/DocumentationPage';
+import { ApiReferencePage } from '../pages/public/ApiReferencePage';
+import { CommunityPage } from '../pages/public/CommunityPage';
 import { PostEditorPage } from '../pages/admin/PostEditorPage';
 import { CommentsPage } from '../pages/admin/CommentsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
@@ -63,6 +66,12 @@ export const router = createBrowserRouter([
       { path: 'explore', element: <ExplorePage /> },
 
       { path: 'about', element: <AboutPage /> },
+
+      { path: 'documentation', element: <DocumentationPage /> },
+
+      { path: 'api-reference', element: <ApiReferencePage /> },
+
+      { path: 'community', element: <CommunityPage /> },
 
       { path: 'post/:slug', element: <PostDetailPage /> },
 

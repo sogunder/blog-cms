@@ -1,11 +1,13 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../app/store/useAuthStore';
 import { PublicUserMenu } from './PublicUserMenu';
+import { ScrollToTop } from '../ScrollToTop';
 
 export const PublicLayout = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return (
     <div className="min-h-screen bg-gray-50/50 flex flex-col">
+      <ScrollToTop />
       <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
@@ -67,19 +69,11 @@ export const PublicLayout = () => {
             </p>
           </div>
           <div>
-            <h4 className="font-bold text-gray-900 mb-6">Plataforma</h4>
-            <ul className="space-y-4 text-sm text-gray-500 font-medium">
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Características</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Integraciones</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Precios</Link></li>
-            </ul>
-          </div>
-          <div>
             <h4 className="font-bold text-gray-900 mb-6">Soporte</h4>
             <ul className="space-y-4 text-sm text-gray-500 font-medium">
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Documentación</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Referencia API</Link></li>
-              <li><Link to="/" className="hover:text-google-blue transition-colors">Comunidad</Link></li>
+              <li><Link to="/documentation" className="hover:text-google-blue transition-colors">Documentación</Link></li>
+              <li><Link to="/api-reference" className="hover:text-google-blue transition-colors">Referencia API</Link></li>
+              <li><Link to="/community" className="hover:text-google-blue transition-colors">Comunidad</Link></li>
             </ul>
           </div>
         </div>

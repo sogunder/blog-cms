@@ -13,6 +13,7 @@ import {
   Bell
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { ScrollToTop } from '../ScrollToTop';
 
 export const AdminLayout = () => {
   const { user, logout } = useAuthStore();
@@ -39,6 +40,7 @@ export const AdminLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-50/50">
+      <ScrollToTop />
       {/* Sidebar */}
       <aside className="w-72 bg-white border-r hidden lg:flex flex-col shadow-sm">
         <div className="h-20 flex items-center px-8 border-b">
