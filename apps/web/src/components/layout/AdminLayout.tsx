@@ -34,7 +34,7 @@ export const AdminLayout = () => {
     { label: 'Panel Control', icon: LayoutDashboard, path: '/admin', roles: ['admin', 'editor', 'reader'] },
     { label: 'Entradas', icon: FileText, path: '/admin/posts', roles: ['admin', 'editor', 'reader'] },
     { label: 'Comentarios', icon: MessageSquare, path: '/admin/comments', roles: ['admin', 'editor'] },
-    { label: 'Categorías', icon: Tags, path: '/admin/categories', roles: ['admin', 'editor'] },
+    { label: 'Categorías', icon: Tags, path: '/admin/categories', roles: ['admin'] },
     { label: 'Usuarios', icon: Users, path: '/admin/users', roles: ['admin'] },
   ].filter(item => user && item.roles.includes(user.role));
 

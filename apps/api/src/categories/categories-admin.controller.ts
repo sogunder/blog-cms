@@ -21,26 +21,20 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoriesAdminController {
   constructor(private readonly categories: CategoriesService) {}
 
-  @Roles(UserRole.Admin, UserRole.Editor)
+  @Roles(UserRole.Admin)
   @Post()
-  @ApiOperation({ summary: 'Create a new category' })
-  @ApiResponse({ status: 201, description: 'Category created successfully' })
   create(@Body() dto: CreateCategoryDto) {
     return this.categories.create(dto);
   }
 
-  @Roles(UserRole.Admin, UserRole.Editor)
+  @Roles(UserRole.Admin)
   @Get()
-  @ApiOperation({ summary: 'List all categories (admin)' })
-  @ApiResponse({ status: 200, description: 'Return all categories' })
   list() {
     return this.categories.findAllAdmin();
   }
 
-  @Roles(UserRole.Admin, UserRole.Editor)
+  @Roles(UserRole.Admin)
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a category' })
-  @ApiResponse({ status: 200, description: 'Category updated successfully' })
   update(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: UpdateCategoryDto,
@@ -48,10 +42,8 @@ export class CategoriesAdminController {
     return this.categories.update(id, dto);
   }
 
-  @Roles(UserRole.Admin, UserRole.Editor)
+  @Roles(UserRole.Admin)
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a category' })
-  @ApiResponse({ status: 200, description: 'Category deleted successfully' })
   remove(@Param('id', ParseObjectIdPipe) id: string) {
     return this.categories.remove(id);
   }

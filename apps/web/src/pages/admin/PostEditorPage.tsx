@@ -57,10 +57,10 @@ export const PostEditorPage = () => {
     const loadData = async () => {
       try {
         const [catsData, tagsData] = await Promise.all([
-          categoryService.getAdminCategories(),
+         categoryService.getCategories(),
           tagService.getAdminTags(),
         ]);
-        setCategories(catsData);
+        setCategories(catsData);  
         setTags(tagsData);
 
         if (isEdit && id) {
