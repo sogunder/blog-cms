@@ -89,11 +89,18 @@ export class PostsService {
     @InjectModel(Tag.name) private readonly tags: Model<TagDocument>,
   ) {}
 
-  async create(authorId: string, dto: CreatePostDto) {
+  async create(
+  authorId: string,
+  dto: CreatePostDto,
+  userRole?: UserRole,
+) {
     await this.ensureCategory(dto.category);
     const tagIds = await this.resolveTags(dto.tags ?? []);
     const slug = await this.uniqueSlug(dto.slug?.trim() || slugify(dto.title));
-    const status = dto.status ?? PostStatus.Draft;
+    const status =
+  userRole === UserRole.Admin
+    ? dto.status ?? PostStatus.Published
+    : PostStatus.Pending;
     const publishedAt =
       status === PostStatus.Published ? new Date() : null;
 

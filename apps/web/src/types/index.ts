@@ -10,7 +10,7 @@ export interface User {
   createdAt?: string;
 }
 
-export type PostStatus = 'published' | 'draft';
+export type PostStatus = 'draft' | 'pending' | 'published';
 
 export interface Post {
   id: string;

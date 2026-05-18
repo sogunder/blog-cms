@@ -21,7 +21,7 @@ const postSchema = z.object({
   content: z.string().min(20, 'El contenido es muy corto'),
   category: z.string().min(1, 'La categoría es obligatoria'),
   tags: z.array(z.string()),
-  status: z.enum(['published', 'draft']),
+  status: z.enum(['draft', 'pending', 'published']),
 });
 
 type PostFormValues = z.infer<typeof postSchema>;
@@ -46,7 +46,7 @@ export const PostEditorPage = () => {
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
     defaultValues: {
-      status: 'draft',
+      status: user?.role === 'admin' ? 'draft' : 'pending',
       tags: [],
     },
   });
@@ -222,8 +222,14 @@ export const PostEditorPage = () => {
                 className="w-full p-4 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-google-blue outline-none transition-all appearance-none bg-white font-medium"
                 {...register('status')}
               >
-                <option value="draft">Borrador</option>
-                <option value="published">Publicado</option>
+                {user?.role === 'admin' ? (
+                  <>
+                    <option value="draft">Borrador</option>
+                    <option value="published">Publicado</option>
+                  </>
+                ) : (
+                  <option value="pending">Enviar a revisión</option>
+                )}
               </select>
             </div>
 

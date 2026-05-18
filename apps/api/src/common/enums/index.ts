@@ -6,6 +6,7 @@ export enum UserRole {
 
 export enum PostStatus {
   Draft = 'draft',
+  Pending = 'pending',
   Published = 'published',
 }
 

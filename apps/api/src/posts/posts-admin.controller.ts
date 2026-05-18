@@ -57,8 +57,15 @@ export class PostsAdminController {
   @Post()
   @ApiOperation({ summary: 'Create a new post' })
   @ApiResponse({ status: 201, description: 'Post created successfully' })
-  create(@CurrentUser() user: JwtPayload, @Body() dto: CreatePostDto) {
-    return this.posts.create(user.sub, dto);
+  create(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: CreatePostDto,
+  ) {
+    return this.posts.create(
+      user.sub,
+      dto,
+      user.role,
+    );
   }
 
   @Roles(UserRole.Admin, UserRole.Editor)
