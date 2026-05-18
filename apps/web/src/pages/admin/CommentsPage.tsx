@@ -4,10 +4,13 @@ import type { Comment } from '../../types';
 import { Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { commentService } from '../../services/comment.service';
 import { toast } from 'sonner';
+import { useAuthStore } from '../../app/store/useAuthStore';
 
 export const CommentsPage = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthStore();
+  const isEditor = user?.role === 'editor';
 
   useEffect(() => {
     loadComments();
@@ -25,13 +28,23 @@ export const CommentsPage = () => {
     }
   };
 
+  const canModerateComment = (comment: Comment): boolean => {
+    if (user?.role === 'admin') return true;
+    if (isEditor) return comment.post?.id !== undefined; // Si editor, solo sus posts (filtrado en backend)
+    return false;
+  };
+
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
       await commentService.updateCommentStatus(id, status);
       toast.success(`Comentario ${status === 'approved' ? 'aprobado' : 'marcado como spam'}`);
       loadComments();
-    } catch (error) {
-      toast.error('Error al actualizar el estado');
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        toast.error('No tienes permiso para moderar este comentario');
+      } else {
+        toast.error('Error al actualizar el estado');
+      }
     }
   };
 
@@ -41,8 +54,12 @@ export const CommentsPage = () => {
       await commentService.deleteComment(id);
       toast.success('Comentario eliminado');
       loadComments();
-    } catch (error) {
-      toast.error('No se pudo eliminar');
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        toast.error('No tienes permiso para eliminar este comentario');
+      } else {
+        toast.error('No se pudo eliminar');
+      }
     }
   };
 
@@ -81,31 +98,35 @@ export const CommentsPage = () => {
       header: 'Acciones',
       accessor: (c: Comment) => (
         <div className="flex space-x-2">
-          {c.status !== 'approved' && (
-            <button 
-              onClick={() => handleUpdateStatus(c.id, 'approved')}
-              className="p-1.5 text-gray-400 hover:text-google-green transition-colors"
-              title="Aprobar"
-            >
-              <CheckCircle size={18} />
-            </button>
+          {canModerateComment(c) && (
+            <>
+              {c.status !== 'approved' && (
+                <button 
+                  onClick={() => handleUpdateStatus(c.id, 'approved')}
+                  className="p-1.5 text-gray-400 hover:text-google-green transition-colors"
+                  title="Aprobar"
+                >
+                  <CheckCircle size={18} />
+                </button>
+              )}
+              {c.status !== 'spam' && (
+                <button 
+                  onClick={() => handleUpdateStatus(c.id, 'spam')}
+                  className="p-1.5 text-gray-400 hover:text-google-yellow transition-colors"
+                  title="Marcar Spam"
+                >
+                  <XCircle size={18} />
+                </button>
+              )}
+              <button 
+                onClick={() => handleDelete(c.id)}
+                className="p-1.5 text-gray-400 hover:text-google-red transition-colors"
+                title="Eliminar"
+              >
+                <Trash2 size={18} />
+              </button>
+            </>
           )}
-          {c.status !== 'spam' && (
-            <button 
-              onClick={() => handleUpdateStatus(c.id, 'spam')}
-              className="p-1.5 text-gray-400 hover:text-google-yellow transition-colors"
-              title="Marcar Spam"
-            >
-              <XCircle size={18} />
-            </button>
-          )}
-          <button 
-            onClick={() => handleDelete(c.id)}
-            className="p-1.5 text-gray-400 hover:text-google-red transition-colors"
-            title="Eliminar"
-          >
-            <Trash2 size={18} />
-          </button>
         </div>
       )
     }
@@ -114,13 +135,21 @@ export const CommentsPage = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Comentarios</h1>
-        <p className="text-gray-500 font-medium">Gestiona la conversación en tu blog.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+          {isEditor ? 'Comentarios en mis posts' : 'Comentarios'}
+        </h1>
+        <p className="text-gray-500 font-medium">
+          {isEditor ? 'Modera los comentarios en tus entradas.' : 'Gestiona la conversación en tu blog.'}
+        </p>
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-gray-500 font-bold">Cargando comentarios...</div>
+        ) : comments.length === 0 ? (
+          <div className="p-12 text-center text-gray-500 font-medium">
+            {isEditor ? 'No hay comentarios en tus posts' : 'Sin comentarios'}
+          </div>
         ) : (
           <DataTable columns={columns} data={comments} />
         )}

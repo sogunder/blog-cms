@@ -2,10 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CommentStatus, PostStatus } from '../common/enums';
+import { CommentStatus, PostStatus, UserRole } from '../common/enums';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -100,12 +101,37 @@ export class CommentsService {
     return mapComment(populated.toObject());
   }
 
-  async findAdmin(page: number, limit: number): Promise<PaginatedResult<unknown>> {
+  async findAdmin(page: number, limit: number, authorId?: string, userRole?: UserRole): Promise<PaginatedResult<unknown>> {
     const skip = (page - 1) * limit;
+
+    // Si es editor, filtrar comentarios solo de sus posts
+    let filter: Record<string, unknown> = {};
+    if (userRole === UserRole.Editor && authorId) {
+      const userPostIds = await this.posts
+        .find({ author: new Types.ObjectId(authorId) })
+        .select('_id')
+        .lean()
+        .exec()
+        .then((posts) => posts.map((p) => p._id));
+
+      if (userPostIds.length > 0) {
+        filter = { post: { $in: userPostIds } };
+      } else {
+        // Si el editor no tiene posts, retornar vacío
+        return {
+          data: [],
+          total: 0,
+          page,
+          limit,
+          totalPages: 1,
+        };
+      }
+    }
+
     const [total, rows] = await Promise.all([
-      this.comments.countDocuments().exec(),
+      this.comments.countDocuments(filter).exec(),
       this.comments
-        .find()
+        .find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -122,7 +148,28 @@ export class CommentsService {
     };
   }
 
-  async updateStatus(id: string, dto: UpdateCommentDto) {
+  async updateStatus(id: string, dto: UpdateCommentDto, authorId?: string, userRole?: UserRole) {
+    const comment = await this.comments
+      .findById(id)
+      .populate({
+        path: 'post',
+        select: 'author',
+        populate: { path: 'author', select: '_id' }
+      })
+      .exec();
+    if (!comment) {
+      throw new NotFoundException('Comentario no encontrado');
+    }
+
+    // Si es editor, validar que el comentario pertenece a uno de sus posts
+    if (userRole === UserRole.Editor && authorId) {
+      const postAuthorId = (comment.post as any)?.author?._id?.toString?.() ||
+                           String((comment.post as any)?.author?._id);
+      if (postAuthorId !== authorId) {
+        throw new ForbiddenException('No puedes moderar comentarios de posts ajenos');
+      }
+    }
+
     const updated = await this.comments
       .findByIdAndUpdate(
         id,
@@ -138,7 +185,28 @@ export class CommentsService {
     return mapComment(updated);
   }
 
-  async remove(id: string) {
+  async remove(id: string, authorId?: string, userRole?: UserRole) {
+    const comment = await this.comments
+      .findById(id)
+      .populate({
+        path: 'post',
+        select: 'author',
+        populate: { path: 'author', select: '_id' }
+      })
+      .exec();
+    if (!comment) {
+      throw new NotFoundException('Comentario no encontrado');
+    }
+
+    // Si es editor, validar que el comentario pertenece a uno de sus posts
+    if (userRole === UserRole.Editor && authorId) {
+      const postAuthorId = (comment.post as any)?.author?._id?.toString?.() ||
+                           String((comment.post as any)?.author?._id);
+      if (postAuthorId !== authorId) {
+        throw new ForbiddenException('No puedes eliminar comentarios de posts ajenos');
+      }
+    }
+
     const deleted = await this.comments.findByIdAndDelete(id).exec();
     if (!deleted) {
       throw new NotFoundException('Comentario no encontrado');

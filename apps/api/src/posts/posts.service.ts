@@ -3,13 +3,14 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Category, CategoryDocument } from '../categories/schemas/category.schema';
 import { Tag, TagDocument } from '../tags/schemas/tag.schema';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
-import { PostStatus } from '../common/enums';
+import { PostStatus, UserRole } from '../common/enums';
 import { slugify } from '../common/utils/slug';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -117,10 +118,15 @@ export class PostsService {
     }
   }
 
-  async update(id: string, dto: UpdatePostDto) {
+  async update(id: string, dto: UpdatePostDto, authorId?: string, userRole?: UserRole) {
     const existing = await this.posts.findById(id).exec();
     if (!existing) {
       throw new NotFoundException('Post no encontrado');
+    }
+
+    // Si es editor, validar que es propietario del post
+    if (userRole === UserRole.Editor && existing.author.toString() !== authorId) {
+      throw new ForbiddenException('No puedes editar posts de otros usuarios');
     }
 
     const data: Record<string, unknown> = {};
@@ -174,7 +180,17 @@ export class PostsService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, authorId?: string, userRole?: UserRole) {
+    const post = await this.posts.findById(id).exec();
+    if (!post) {
+      throw new NotFoundException('Post no encontrado');
+    }
+
+    // Si es editor, validar que es propietario del post
+    if (userRole === UserRole.Editor && post.author.toString() !== authorId) {
+      throw new ForbiddenException('No puedes eliminar posts de otros usuarios');
+    }
+
     const deleted = await this.posts.findByIdAndDelete(id).exec();
     if (!deleted) {
       throw new NotFoundException('Post no encontrado');
@@ -221,12 +237,18 @@ export class PostsService {
     return mapPost(doc);
   }
 
-  async findAdmin(page: number, limit: number): Promise<PaginatedResult<unknown>> {
+  async findAdmin(page: number, limit: number, authorId?: string, userRole?: UserRole): Promise<PaginatedResult<unknown>> {
     const skip = (page - 1) * limit;
+    
+    // Si es editor, filtrar por author
+    const filter = userRole === UserRole.Editor && authorId
+      ? { author: new Types.ObjectId(authorId) }
+      : {};
+    
     const [total, rows] = await Promise.all([
-      this.posts.countDocuments().exec(),
+      this.posts.countDocuments(filter).exec(),
       this.posts
-        .find()
+        .find(filter)
         .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -243,11 +265,22 @@ export class PostsService {
     };
   }
 
-  async findOneAdmin(id: string) {
+  async findOneAdmin(id: string, authorId?: string, userRole?: UserRole) {
     const doc = await this.posts.findById(id).populate(populate).lean().exec();
     if (!doc) {
       throw new NotFoundException('Post no encontrado');
     }
+
+    // Si es editor, validar que es propietario del post
+    if (userRole === UserRole.Editor && authorId) {
+      const docAuthorId = typeof (doc.author as any)?._id === 'object'
+        ? (doc.author as any)._id.toString()
+        : String((doc.author as any)?._id);
+      if (docAuthorId !== authorId) {
+        throw new ForbiddenException('No puedes ver este post');
+      }
+    }
+
     return mapPost(doc);
   }
 

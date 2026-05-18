@@ -13,6 +13,7 @@ export const PostsPage = () => {
   const { user } = useAuthStore();
   
   const canModify = user?.role === 'admin' || user?.role === 'editor';
+  const isEditor = user?.role === 'editor';
 
   useEffect(() => {
     loadPosts();
@@ -30,14 +31,28 @@ export const PostsPage = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const canEditPost = (post: Post): boolean => {
+    if (user?.role === 'admin') return true;
+    if (isEditor) return post.author?.id === user.id;
+    return false;
+  };
+
+  const handleDelete = async (id: string, post: Post) => {
+    if (!canEditPost(post)) {
+      toast.error('No tienes permiso para eliminar este post');
+      return;
+    }
     if (!confirm('¿Estás seguro de eliminar esta entrada?')) return;
     try {
       await postService.deletePost(id);
       toast.success('Entrada eliminada');
       loadPosts();
-    } catch (error) {
-      toast.error('No se pudo eliminar la entrada');
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        toast.error('No tienes permiso para eliminar este post');
+      } else {
+        toast.error('No se pudo eliminar la entrada');
+      }
     }
   };
 
@@ -66,13 +81,13 @@ export const PostsPage = () => {
           <Link to={`/post/${post.slug}`} className="p-1.5 text-gray-400 hover:text-google-blue transition-colors" title="Ver publicación">
             <Eye size={18} />
           </Link>
-          {canModify && (
+          {canEditPost(post) && (
             <>
               <Link to={`/admin/posts/${post.id}/edit`} className="p-1.5 text-gray-400 hover:text-google-blue transition-colors" title="Editar">
                 <Edit size={18} />
               </Link>
               <button 
-                onClick={() => handleDelete(post.id)}
+                onClick={() => handleDelete(post.id, post)}
                 className="p-1.5 text-gray-400 hover:text-google-red transition-colors"
                 title="Eliminar"
               >
@@ -89,8 +104,12 @@ export const PostsPage = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Entradas</h1>
-          <p className="text-gray-500 font-medium">Gestiona el contenido de tu blog y borradores.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            {isEditor ? 'Mis Entradas' : 'Entradas'}
+          </h1>
+          <p className="text-gray-500 font-medium">
+            {isEditor ? 'Gestiona tu contenido y borradores.' : 'Gestiona el contenido de tu blog y borradores.'}
+          </p>
         </div>
         {canModify && (
           <Link

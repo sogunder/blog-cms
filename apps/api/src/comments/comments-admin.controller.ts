@@ -10,6 +10,8 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import {
   PAGINATION_DEFAULT_LIMIT,
   PAGINATION_DEFAULT_PAGE,
@@ -29,10 +31,13 @@ export class CommentsAdminController {
   @Get()
   @ApiOperation({ summary: 'List all comments (admin)' })
   @ApiResponse({ status: 200, description: 'Return all comments' })
-  findAll(@Query() query: PaginationQueryDto) {
+  findAll(
+    @CurrentUser() user: JwtPayload,
+    @Query() query: PaginationQueryDto,
+  ) {
     const page = query.page ?? PAGINATION_DEFAULT_PAGE;
     const limit = query.limit ?? PAGINATION_DEFAULT_LIMIT;
-    return this.comments.findAdmin(page, limit);
+    return this.comments.findAdmin(page, limit, user.sub, user.role);
   }
 
   @Roles(UserRole.Admin, UserRole.Editor)
@@ -40,17 +45,21 @@ export class CommentsAdminController {
   @ApiOperation({ summary: 'Update comment status' })
   @ApiResponse({ status: 200, description: 'Comment status updated successfully' })
   update(
+    @CurrentUser() user: JwtPayload,
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: UpdateCommentDto,
   ) {
-    return this.comments.updateStatus(id, dto);
+    return this.comments.updateStatus(id, dto, user.sub, user.role);
   }
 
   @Roles(UserRole.Admin, UserRole.Editor)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a comment' })
   @ApiResponse({ status: 200, description: 'Comment deleted successfully' })
-  remove(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.comments.remove(id);
+  remove(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    return this.comments.remove(id, user.sub, user.role);
   }
 }

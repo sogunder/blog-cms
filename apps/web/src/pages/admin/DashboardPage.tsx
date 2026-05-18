@@ -14,6 +14,7 @@ import { commentService } from '../../services/comment.service';
 import type { Post, Comment } from '../../types';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { useAuthStore } from '../../app/store/useAuthStore';
 
 interface StatCardProps {
   title: string;
@@ -46,6 +47,7 @@ export const DashboardPage = () => {
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
   const [recentComments, setRecentComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -100,11 +102,17 @@ export const DashboardPage = () => {
     return <div className="p-12 text-center text-gray-500 font-bold">Cargando resumen...</div>;
   }
 
+  const isEditor = user?.role === 'editor';
+  const pageTitle = isEditor ? 'Mi Panel' : 'Resumen del Panel';
+  const pageSubtitle = isEditor
+    ? 'Aquí están tus estadísticas personales.'
+    : '¡Bienvenido de nuevo! Esto es lo que está pasando hoy.';
+
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Resumen del Panel</h1>
-        <p className="text-gray-500 font-medium mt-1">¡Bienvenido de nuevo! Esto es lo que está pasando hoy.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{pageTitle}</h1>
+        <p className="text-gray-500 font-medium mt-1">{pageSubtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -117,7 +125,7 @@ export const DashboardPage = () => {
         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <FileText size={20} className="mr-3 text-google-blue" />
-            Entradas Recientes
+            {isEditor ? 'Tus Entradas' : 'Entradas Recientes'}
           </h2>
           <div className="space-y-4">
             {recentPosts.map((post) => (
@@ -145,7 +153,7 @@ export const DashboardPage = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 flex items-center">
               <MessageSquare size={20} className="mr-3 text-google-blue" />
-              Comentarios recientes
+              {isEditor ? 'Tus Comentarios' : 'Comentarios recientes'}
             </h2>
             <Link
               to="/admin/comments"

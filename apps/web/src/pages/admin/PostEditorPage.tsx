@@ -12,6 +12,7 @@ import { categoryService } from '../../services/category.service';
 import { tagService } from '../../services/tag.service';
 import type { Category, Tag } from '../../types';
 import { ChevronLeft, Save, Eye } from 'lucide-react';
+import { useAuthStore } from '../../app/store/useAuthStore';
 
 const postSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres'),
@@ -28,11 +29,13 @@ type PostFormValues = z.infer<typeof postSchema>;
 export const PostEditorPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const isEdit = Boolean(id);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [postAuthorId, setPostAuthorId] = useState<string | null>(null);
 
   const {
     register,
@@ -62,6 +65,15 @@ export const PostEditorPage = () => {
 
         if (isEdit && id) {
           const post = await postService.getAdminPost(id);
+          
+          // Validar que editor solo edita sus posts
+          if (user?.role === 'editor' && post.author?.id !== user.id) {
+            toast.error('No tienes permiso para editar este post');
+            navigate('/admin/posts');
+            return;
+          }
+
+          setPostAuthorId(post.author?.id ?? null);
           setValue('title', post.title);
           setValue('slug', post.slug);
           setValue('summary', post.summary);
@@ -70,8 +82,13 @@ export const PostEditorPage = () => {
           setValue('tags', post.tags.map(t => t.id));
           setValue('status', post.status);
         }
-      } catch (error) {
-        toast.error('Error al cargar datos');
+      } catch (error: any) {
+        if (error?.response?.status === 403) {
+          toast.error('No tienes permiso para editar este post');
+          navigate('/admin/posts');
+        } else {
+          toast.error('Error al cargar datos');
+        }
       } finally {
         setIsLoading(false);
       }

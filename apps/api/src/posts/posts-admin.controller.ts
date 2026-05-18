@@ -33,18 +33,24 @@ export class PostsAdminController {
   @Get()
   @ApiOperation({ summary: 'List all posts (admin)' })
   @ApiResponse({ status: 200, description: 'Return all posts' })
-  list(@Query() query: PaginationQueryDto) {
+  list(
+    @CurrentUser() user: JwtPayload,
+    @Query() query: PaginationQueryDto,
+  ) {
     const page = query.page ?? PAGINATION_DEFAULT_PAGE;
     const limit = query.limit ?? PAGINATION_DEFAULT_LIMIT;
-    return this.posts.findAdmin(page, limit);
+    return this.posts.findAdmin(page, limit, user.sub, user.role);
   }
 
   @Roles(UserRole.Admin, UserRole.Editor)
   @Get(':id')
   @ApiOperation({ summary: 'Get a single post by ID (admin)' })
   @ApiResponse({ status: 200, description: 'Return post data' })
-  one(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.posts.findOneAdmin(id);
+  one(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    return this.posts.findOneAdmin(id, user.sub, user.role);
   }
 
   @Roles(UserRole.Admin, UserRole.Editor)
@@ -60,17 +66,21 @@ export class PostsAdminController {
   @ApiOperation({ summary: 'Update an existing post' })
   @ApiResponse({ status: 200, description: 'Post updated successfully' })
   update(
+    @CurrentUser() user: JwtPayload,
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: UpdatePostDto,
   ) {
-    return this.posts.update(id, dto);
+    return this.posts.update(id, dto, user.sub, user.role);
   }
 
   @Roles(UserRole.Admin, UserRole.Editor)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a post' })
   @ApiResponse({ status: 200, description: 'Post deleted successfully' })
-  remove(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.posts.remove(id);
+  remove(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    return this.posts.remove(id, user.sub, user.role);
   }
 }
