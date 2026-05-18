@@ -220,7 +220,10 @@ export class CommentsService {
 
   async findByPostPublic(postId: string) {
     const rows = await this.comments
-      .find({ post: new Types.ObjectId(postId), status: CommentStatus.Approved })
+      .find({
+        post: new Types.ObjectId(postId),
+        status: { $in: [CommentStatus.Approved, CommentStatus.Pending] },
+      })
       .sort({ createdAt: 1 })
       .populate(populateList)
       .lean()
