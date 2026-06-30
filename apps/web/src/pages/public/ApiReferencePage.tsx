@@ -39,7 +39,7 @@ const groups: EndpointGroup[] = [
     tag: 'auth',
     description: 'Registro, login y verificación de sesión con JWT.',
     endpoints: [
-      { method: 'POST', path: '/auth/register', description: 'Crear una cuenta nueva', auth: 'public' },
+      { method: 'POST', path: '/auth/signup', description: 'Crear una cuenta nueva', auth: 'public' },
       { method: 'POST', path: '/auth/login', description: 'Iniciar sesión y obtener token JWT', auth: 'public' },
       { method: 'POST', path: '/auth/logout', description: 'Cerrar sesión del usuario actual', auth: 'user' },
       { method: 'GET', path: '/auth/profile', description: 'Obtener el perfil del usuario autenticado', auth: 'user' },

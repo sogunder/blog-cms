@@ -18,7 +18,7 @@ import { AuthService } from './auth.service';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
 
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+import { SignUpDto } from './dto/sign-up.dto';
 
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
@@ -39,11 +39,11 @@ export class AuthController {
   }
 
   @Public()
-  @Post('register')
-  @ApiOperation({ summary: 'User register' })
+  @Post('signup')
+  @ApiOperation({ summary: 'User signup' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
-  register(@Body() registerDto: RegisterDto) {
-    return this.auth.register(registerDto);
+  signUp(@Body() signUpDto: SignUpDto) {
+    return this.auth.register(signUpDto);
   }
 
   @ApiBearerAuth()
@@ -51,6 +51,14 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Return current user data' })
   getProfile(@CurrentUser() user: JwtPayload) {
+    return user;
+  }
+
+  @ApiBearerAuth()
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user (alias de profile)' })
+  @ApiResponse({ status: 200, description: 'Return current user data' })
+  me(@CurrentUser() user: JwtPayload) {
     return user;
   }
 

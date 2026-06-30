@@ -205,6 +205,14 @@ export class UsersService implements OnModuleInit {
     });
   }
 
+  async findByEmail(email: string) {
+    return this.findByEmailForAuth(email);
+  }
+
+  async findById(id: string): Promise<PublicUser> {
+    return this.findOne(id);
+  }
+
   async findByEmailForAuth(email: string) {
     const normalized = email.trim().toLowerCase();
 

@@ -29,7 +29,7 @@ export const authService = {
     email: string;
     password: string;
   }) {
-  const response = await api.post('/auth/register', data);
+  const response = await api.post('/auth/signup', data);
   return response.data;
 }
 };

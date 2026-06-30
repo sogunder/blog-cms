@@ -4,7 +4,7 @@ import { UserRole } from '../common/enums';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
 import { UsersService } from '../users/users.service';
 import { ConflictException } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
+import { SignUpDto } from './dto/sign-up.dto';
 import * as bcrypt from 'bcrypt';
 
 export type { JwtPayload } from './interfaces/jwt-payload.interface';
@@ -27,7 +27,7 @@ export class AuthService {
   ) {}
 
   async signIn(email: string, password: string): Promise<LoginResponse> {
-    const user = await this.users.findByEmailForAuth(email);
+    const user = await this.users.findByEmail(email);
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Credenciales inválidas');
@@ -60,20 +60,18 @@ export class AuthService {
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<LoginResponse> {
-    const existingUser = await this.users.findByEmailForAuth(
-      registerDto.email,
-    );
+  async register(signUpDto: SignUpDto): Promise<LoginResponse> {
+    const existingUser = await this.users.findByEmail(signUpDto.email);
 
     if (existingUser) {
       throw new ConflictException('El correo ya está registrado');
     }
 
     const user = await this.users.create({
-      email: registerDto.email,
-      name: registerDto.name,
-      password: registerDto.password,
-      role: UserRole.Reader,
+      email: signUpDto.email,
+      name: signUpDto.name,
+      password: signUpDto.password,
+      role: UserRole.Editor,
     });
 
     const payload: JwtPayload = {

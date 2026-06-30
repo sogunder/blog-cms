@@ -3,7 +3,6 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -133,7 +132,7 @@ export class PostsService {
 
     // Si es editor, validar que es propietario del post
     if (userRole === UserRole.Editor && existing.author.toString() !== authorId) {
-      throw new ForbiddenException('No puedes editar posts de otros usuarios');
+      throw new NotFoundException('Post no encontrado');
     }
 
     const data: Record<string, unknown> = {};
@@ -195,7 +194,7 @@ export class PostsService {
 
     // Si es editor, validar que es propietario del post
     if (userRole === UserRole.Editor && post.author.toString() !== authorId) {
-      throw new ForbiddenException('No puedes eliminar posts de otros usuarios');
+      throw new NotFoundException('Post no encontrado');
     }
 
     const deleted = await this.posts.findByIdAndDelete(id).exec();
@@ -284,7 +283,7 @@ export class PostsService {
         ? (doc.author as any)._id.toString()
         : String((doc.author as any)?._id);
       if (docAuthorId !== authorId) {
-        throw new ForbiddenException('No puedes ver este post');
+        throw new NotFoundException('Post no encontrado');
       }
     }
 
