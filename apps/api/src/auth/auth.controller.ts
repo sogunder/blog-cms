@@ -18,6 +18,7 @@ import { AuthService } from './auth.service';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
 
 import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -85,5 +86,13 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Successfully logged out' })
   logout(@CurrentUser() user: JwtPayload) {
     return this.auth.logout(user.sub);
+  }
+
+  refreshAccessTokenHandler(dto: RefreshTokenDto) {
+    return this.auth.refreshAccessToken(dto.refreshToken);
+  }
+
+  revokeRefreshTokenHandler(dto: RefreshTokenDto) {
+    return this.auth.revokeRefreshToken(dto.refreshToken);
   }
 }
