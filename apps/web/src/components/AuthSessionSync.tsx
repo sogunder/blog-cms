@@ -4,18 +4,35 @@ import { authService } from '../services/auth.service';
 
 const AUTH_STORAGE_KEY = 'auth-storage';
 
-/** Tras hidratar el store persistido, valida el JWT con el backend. */
+/** Tras hidratar el store persistido, valida el JWT con el backend o renueva con refresh token. */
 export function AuthSessionSync() {
   useEffect(() => {
     const sync = async () => {
       await useAuthStore.persist.rehydrate();
-      const { token, logout, setAuth } = useAuthStore.getState();
+      const { token, refreshToken, logout, setAuth, setTokens } =
+        useAuthStore.getState();
+
       try {
         if (token) {
           const res = await authService.verify();
-          if (res.valid) setAuth(res.user, token);
-          else logout();
+          if (res.valid) {
+            setAuth(res.user, token, refreshToken ?? '');
+            return;
+          }
         }
+
+        if (refreshToken) {
+          const refreshed = await authService.refresh(refreshToken);
+          setTokens(refreshed.access_token, refreshed.refresh_token);
+
+          const res = await authService.verify();
+          if (res.valid) {
+            setAuth(res.user, refreshed.access_token, refreshed.refresh_token);
+            return;
+          }
+        }
+
+        logout();
       } catch {
         logout();
       } finally {

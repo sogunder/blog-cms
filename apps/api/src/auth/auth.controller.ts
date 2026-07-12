@@ -33,7 +33,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   @ApiOperation({ summary: 'User login' })
-  @ApiResponse({ status: 200, description: 'Return JWT access token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return access token, refresh token and user data',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   signIn(@Body() dto: LoginDto) {
     return this.auth.signIn(dto.email, dto.password);
@@ -42,9 +45,36 @@ export class AuthController {
   @Public()
   @Post('signup')
   @ApiOperation({ summary: 'User signup' })
-  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'User created with access and refresh tokens',
+  })
   signUp(@Body() signUpDto: SignUpDto) {
     return this.auth.register(signUpDto);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token using a valid refresh token' })
+  @ApiResponse({
+    status: 200,
+    description: 'New access and refresh tokens issued',
+  })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  refreshAccessToken(@Body() dto: RefreshTokenDto) {
+    return this.auth.refreshAccessToken(dto.refreshToken);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('revoke')
+  @ApiOperation({ summary: 'Revoke a refresh token' })
+  @ApiResponse({ status: 200, description: 'Refresh token revoked' })
+  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
+  async revokeRefreshToken(@Body() dto: RefreshTokenDto) {
+    await this.auth.revokeRefreshToken(dto.refreshToken);
+    return { message: 'Refresh token revocado' };
   }
 
   @ApiBearerAuth()
@@ -82,17 +112,9 @@ export class AuthController {
   @ApiBearerAuth()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout user' })
+  @ApiOperation({ summary: 'Logout user and revoke all refresh tokens' })
   @ApiResponse({ status: 200, description: 'Successfully logged out' })
   logout(@CurrentUser() user: JwtPayload) {
     return this.auth.logout(user.sub);
-  }
-
-  refreshAccessTokenHandler(dto: RefreshTokenDto) {
-    return this.auth.refreshAccessToken(dto.refreshToken);
-  }
-
-  revokeRefreshTokenHandler(dto: RefreshTokenDto) {
-    return this.auth.revokeRefreshToken(dto.refreshToken);
   }
 }

@@ -45,7 +45,7 @@ export const LoginPage = () => {
     try {
       const response = await authService.login(data);
       
-      setAuth(response.user, response.token);
+      setAuth(response.user, response.token, response.refreshToken);
       toast.success(`¡Bienvenido de nuevo, ${response.user.name}!`);
       
       if (response.user.role === 'admin' || response.user.role === 'editor') {
