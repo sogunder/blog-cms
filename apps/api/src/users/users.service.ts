@@ -205,6 +205,10 @@ export class UsersService implements OnModuleInit {
     });
   }
 
+  async incrementTokenVersion(id: string): Promise<void> {
+    await this.users.findByIdAndUpdate(id, { $inc: { tokenVersion: 1 } }).exec();
+  }
+
   async findByEmail(email: string) {
     return this.findByEmailForAuth(email);
   }
@@ -235,6 +239,26 @@ export class UsersService implements OnModuleInit {
       passwordHash: u.passwordHash as string,
       role: (u.role as UserRole) ?? UserRole.Reader,
       isActive: Boolean(u.isActive ?? true),
+      tokenVersion: Number(u.tokenVersion ?? 0),
+    };
+  }
+
+  async findByIdForAuth(id: string) {
+    const user = await this.users.findById(id).lean().exec();
+
+    if (!user) {
+      return null;
+    }
+
+    const u = user as Record<string, unknown>;
+
+    return {
+      id: String(u._id),
+      email: u.email as string,
+      name: u.name as string,
+      role: (u.role as UserRole) ?? UserRole.Reader,
+      isActive: Boolean(u.isActive ?? true),
+      tokenVersion: Number(u.tokenVersion ?? 0),
     };
   }
 

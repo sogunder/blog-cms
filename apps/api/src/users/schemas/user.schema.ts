@@ -27,6 +27,9 @@ export class User {
 
   @Prop({ type: Date, default: null })
   lastAccess: Date | null;
+
+  @Prop({ default: 0 })
+  tokenVersion!: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

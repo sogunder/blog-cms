@@ -72,7 +72,7 @@ export class AuthService {
     refreshToken: string,
   ): Promise<RefreshTokenResponse> {
     const payload = await this.refreshTokens.verify(refreshToken);
-    const user = await this.users.findById(payload.sub);
+    const user = await this.users.findByIdForAuth(payload.sub);
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Usuario no válido');
@@ -95,7 +95,10 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    await this.refreshTokens.revokeAllForUser(userId);
+    await Promise.all([
+      this.refreshTokens.revokeAllForUser(userId),
+      this.users.incrementTokenVersion(userId),
+    ]);
 
     return {
       message: 'Logout exitoso',
@@ -109,6 +112,7 @@ export class AuthService {
     email: string;
     name: string;
     role: UserRole;
+    tokenVersion?: number;
   }): Promise<AuthTokensResponse> {
     const access_token = await this.accessTokens.sign(this.toJwtPayload(user));
     const refresh_token = await this.refreshTokens.issue(user.id);
@@ -130,12 +134,14 @@ export class AuthService {
     email: string;
     name: string;
     role: UserRole;
+    tokenVersion?: number;
   }): JwtPayload {
     return {
       sub: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
+      tv: user.tokenVersion ?? 0,
     };
   }
 }
