@@ -109,12 +109,16 @@ export class AuthController {
     };
   }
 
-  @ApiBearerAuth()
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout user and revoke all refresh tokens' })
+  @ApiOperation({
+    summary: 'Logout user and revoke all refresh tokens',
+  })
   @ApiResponse({ status: 200, description: 'Successfully logged out' })
-  logout(@CurrentUser() user: JwtPayload) {
-    return this.auth.logout(user.sub);
+  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
+  async logout(@Body() dto: RefreshTokenDto) {
+    const payload = await this.auth.verifyRefreshToken(dto.refreshToken);
+    return this.auth.logout(payload.sub);
   }
 }

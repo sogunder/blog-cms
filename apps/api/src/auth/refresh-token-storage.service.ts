@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   RefreshToken,
   RefreshTokenDocument,
@@ -15,7 +15,7 @@ export class RefreshTokenStorageService {
 
   async store(userId: string, jti: string, expiresAt: Date): Promise<void> {
     await this.refreshTokens.create({
-      userId,
+      userId: new Types.ObjectId(userId),
       jti,
       expiresAt,
       revokedAt: null,
@@ -41,7 +41,7 @@ export class RefreshTokenStorageService {
   async revokeAllForUser(userId: string): Promise<void> {
     await this.refreshTokens
       .updateMany(
-        { userId, revokedAt: null },
+        { userId: new Types.ObjectId(userId), revokedAt: null },
         { revokedAt: new Date() },
       )
       .exec();

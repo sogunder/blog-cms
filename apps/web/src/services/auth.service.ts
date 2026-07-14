@@ -1,4 +1,5 @@
 import api from './api';
+import { useAuthStore } from '../app/store/useAuthStore';
 import type { User, AuthResponse, RefreshResponse } from '../types';
 
 export interface LoginCredentials {
@@ -31,7 +32,10 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    await api.post('/auth/logout');
+    const { refreshToken } = useAuthStore.getState();
+    if (!refreshToken) return;
+
+    await api.post('/auth/logout', { refreshToken });
   },
 
   async revoke(refreshToken: string): Promise<void> {

@@ -8,7 +8,12 @@ const api = axios.create({
 
 let refreshPromise: Promise<string | null> | null = null;
 
-const AUTH_SKIP_REFRESH_PATHS = ['/auth/login', '/auth/refresh', '/auth/revoke'];
+const AUTH_SKIP_REFRESH_PATHS = [
+  '/auth/login',
+  '/auth/refresh',
+  '/auth/revoke',
+  '/auth/logout',
+];
 
 function shouldSkipRefresh(url: string): boolean {
   return AUTH_SKIP_REFRESH_PATHS.some((path) => url.includes(path));

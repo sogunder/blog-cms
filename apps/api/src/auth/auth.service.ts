@@ -90,6 +90,10 @@ export class AuthService {
     await this.refreshTokens.revoke(refreshToken);
   }
 
+  verifyRefreshToken(refreshToken: string) {
+    return this.refreshTokens.verify(refreshToken);
+  }
+
   async logout(userId: string) {
     await this.refreshTokens.revokeAllForUser(userId);
 
