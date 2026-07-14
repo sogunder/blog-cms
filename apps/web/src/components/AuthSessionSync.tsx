@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '../app/store/useAuthStore';
+import { refreshAccessToken } from '../services/api';
 import { authService } from '../services/auth.service';
 
 const AUTH_STORAGE_KEY = 'auth-storage';
@@ -9,27 +10,23 @@ export function AuthSessionSync() {
   useEffect(() => {
     const sync = async () => {
       await useAuthStore.persist.rehydrate();
-      const { token, refreshToken, logout, setAuth, setTokens } =
-        useAuthStore.getState();
+      const { token, refreshToken, logout, setAuth } = useAuthStore.getState();
+
+      if (!token && !refreshToken) {
+        useAuthStore.setState({ hasHydrated: true });
+        return;
+      }
 
       try {
-        if (token) {
-          const res = await authService.verify();
-          if (res.valid) {
-            setAuth(res.user, token, refreshToken ?? '');
-            return;
-          }
+        if (!token && refreshToken) {
+          await refreshAccessToken();
         }
 
-        if (refreshToken) {
-          const refreshed = await authService.refresh(refreshToken);
-          setTokens(refreshed.access_token, refreshed.refresh_token);
-
-          const res = await authService.verify();
-          if (res.valid) {
-            setAuth(res.user, refreshed.access_token, refreshed.refresh_token);
-            return;
-          }
+        const res = await authService.verify();
+        if (res.valid) {
+          const state = useAuthStore.getState();
+          setAuth(res.user, state.token ?? '', state.refreshToken ?? '');
+          return;
         }
 
         logout();

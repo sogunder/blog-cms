@@ -1,12 +1,15 @@
-import axios, { type InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 import { useAuthStore } from '../app/store/useAuthStore';
 import type { RefreshResponse } from '../types';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
-});
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-let refreshPromise: Promise<string | null> | null = null;
+const api = axios.create({ baseURL });
+
+let refreshPromise: Promise<string> | null = null;
 
 const AUTH_SKIP_REFRESH_PATHS = [
   '/auth/login',
@@ -19,34 +22,48 @@ function shouldSkipRefresh(url: string): boolean {
   return AUTH_SKIP_REFRESH_PATHS.some((path) => url.includes(path));
 }
 
-async function refreshAccessToken(): Promise<string | null> {
-  const { refreshToken, user, setAuth, setTokens, logout } =
-    useAuthStore.getState();
+function setBearerToken(
+  config: InternalAxiosRequestConfig,
+  token: string,
+): void {
+  config.headers.set('Authorization', `Bearer ${token}`);
+}
 
-  if (!refreshToken) {
-    logout();
-    return null;
+/** Renueva la sesión y actualiza el store. Todas las peticiones en espera comparten la misma promesa. */
+export async function refreshAccessToken(): Promise<string> {
+  if (refreshPromise) {
+    return refreshPromise;
   }
 
-  if (!refreshPromise) {
-    refreshPromise = api
-      .post<RefreshResponse>('/auth/refresh', { refreshToken })
-      .then(({ data }) => {
-        if (user) {
-          setAuth(user, data.access_token, data.refresh_token);
-        } else {
-          setTokens(data.access_token, data.refresh_token);
-        }
-        return data.access_token;
-      })
-      .catch(() => {
-        logout();
-        return null;
-      })
-      .finally(() => {
-        refreshPromise = null;
-      });
-  }
+  refreshPromise = (async () => {
+    const { refreshToken, user, setAuth, setTokens, logout } =
+      useAuthStore.getState();
+
+    if (!refreshToken) {
+      logout();
+      throw new Error('No refresh token');
+    }
+
+    try {
+      const { data } = await axios.post<RefreshResponse>(
+        `${baseURL}/auth/refresh`,
+        { refreshToken },
+      );
+
+      if (user) {
+        setAuth(user, data.access_token, data.refresh_token);
+      } else {
+        setTokens(data.access_token, data.refresh_token);
+      }
+
+      return data.access_token;
+    } catch {
+      logout();
+      throw new Error('Refresh failed');
+    } finally {
+      refreshPromise = null;
+    }
+  })();
 
   return refreshPromise;
 }
@@ -54,39 +71,44 @@ async function refreshAccessToken(): Promise<string | null> {
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    setBearerToken(config, token);
   }
   return config;
 });
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  async (error: AxiosError) => {
     const originalRequest = error.config as
       | (InternalAxiosRequestConfig & { _retry?: boolean })
       | undefined;
 
     if (
-      error.response?.status === 401 &&
-      originalRequest &&
-      !originalRequest._retry
+      error.response?.status !== 401 ||
+      !originalRequest ||
+      originalRequest._retry
     ) {
-      const url = String(originalRequest.url ?? '');
-
-      if (!shouldSkipRefresh(url)) {
-        originalRequest._retry = true;
-        const newToken = await refreshAccessToken();
-
-        if (newToken) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return api(originalRequest);
-        }
-      } else if (!url.includes('/auth/login')) {
-        useAuthStore.getState().logout();
-      }
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    const url = String(originalRequest.url ?? '');
+
+    if (shouldSkipRefresh(url)) {
+      if (!url.includes('/auth/login')) {
+        useAuthStore.getState().logout();
+      }
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    try {
+      const newToken = await refreshAccessToken();
+      setBearerToken(originalRequest, newToken);
+      return api(originalRequest);
+    } catch {
+      return Promise.reject(error);
+    }
   },
 );
 

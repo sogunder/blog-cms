@@ -1,4 +1,4 @@
-import api from './api';
+import api, { refreshAccessToken } from './api';
 import { useAuthStore } from '../app/store/useAuthStore';
 import type { User, AuthResponse, RefreshResponse } from '../types';
 
@@ -17,11 +17,14 @@ export const authService = {
     };
   },
 
-  async refresh(refreshToken: string): Promise<RefreshResponse> {
-    const { data } = await api.post<RefreshResponse>('/auth/refresh', {
-      refreshToken,
-    });
-    return data;
+  async refresh(): Promise<RefreshResponse> {
+    const access_token = await refreshAccessToken();
+    const { refreshToken } = useAuthStore.getState();
+
+    return {
+      access_token,
+      refresh_token: refreshToken ?? '',
+    };
   },
 
   async verify(): Promise<{ valid: boolean; user: User }> {
